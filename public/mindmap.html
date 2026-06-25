@@ -1,0 +1,2485 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rubenius Interiors — Interactive Mind-Map</title>
+    
+    <!-- Google Fonts: Playfair Display (Serif Luxury) & Inter (Sans-Serif UI) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- D3.js v7 CDN -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <style>
+        /* CSS RESET & VARIABLES */
+        :root {
+            --bg-base: #070709;
+            --bg-surface: rgba(18, 18, 24, 0.75);
+            --bg-card: #121218;
+            --primary: #d4af37;       /* Champagne Gold */
+            --primary-light: #f3e5ab; /* Light Gold */
+            --primary-dark: #aa7c11;  /* Rich Antique Gold */
+            --text-main: #f3f3f6;
+            --text-muted: #8e8e9f;
+            --text-dark: #121218;
+            --border-gold: rgba(212, 175, 55, 0.25);
+            --border-glass: rgba(255, 255, 255, 0.05);
+            --glow: 0 0 20px rgba(212, 175, 55, 0.3);
+            --glow-strong: 0 0 35px rgba(212, 175, 55, 0.6);
+            --font-serif: 'Playfair Display', serif;
+            --font-sans: 'Inter', sans-serif;
+            --transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+        }
+
+        /* BACKGROUND EFFECTS */
+        .bg-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(212, 175, 55, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(170, 124, 17, 0.04) 0%, transparent 45%);
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        .bg-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        /* HEADER */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: linear-gradient(to bottom, rgba(7, 7, 9, 0.95), rgba(7, 7, 9, 0));
+            z-index: 10;
+            border-bottom: 1px solid var(--border-glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand h1 {
+            font-family: var(--font-serif);
+            font-weight: 600;
+            font-size: 26px;
+            letter-spacing: 2px;
+            color: var(--text-main);
+            background: linear-gradient(135deg, var(--text-main) 30%, var(--primary-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand span {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--primary);
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .controls-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* SEARCH BAR */
+        .search-container {
+            position: relative;
+            width: 280px;
+        }
+
+        .search-container input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: 30px;
+            padding: 10px 20px 10px 45px;
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            font-size: 13px;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .search-container input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            width: 320px;
+        }
+
+        .search-container svg {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            fill: var(--text-muted);
+            width: 14px;
+            height: 14px;
+            transition: var(--transition);
+            pointer-events: none;
+        }
+
+        .search-container input:focus + svg {
+            fill: var(--primary);
+        }
+
+        /* VIEW TOGGLE BUTTONS */
+        .view-toggle {
+            display: flex;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            padding: 3px;
+            border-radius: 30px;
+        }
+
+        .view-toggle button {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 8px 18px;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font-sans);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .view-toggle button.active {
+            background: var(--primary);
+            color: var(--text-dark);
+            font-weight: 600;
+            box-shadow: var(--glow);
+        }
+
+        /* MAIN CONTAINER */
+        .main-content {
+            flex: 1;
+            display: flex;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        /* FILTER PANEL */
+        .filter-panel {
+            width: 300px;
+            padding: 20px 30px;
+            background: linear-gradient(to right, rgba(7, 7, 9, 0.95), rgba(7, 7, 9, 0.6));
+            border-right: 1px solid var(--border-glass);
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            z-index: 5;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .filter-section h3 {
+            font-family: var(--font-serif);
+            font-size: 16px;
+            color: var(--primary-light);
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .category-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .category-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 12px;
+        }
+
+        .category-item:hover {
+            border-color: rgba(212, 175, 55, 0.4);
+            background: rgba(212, 175, 55, 0.03);
+            transform: translateX(4px);
+        }
+
+        .category-item.active {
+            background: rgba(212, 175, 55, 0.1);
+            border-color: var(--primary);
+            color: var(--text-main);
+        }
+
+        .category-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+            display: inline-block;
+        }
+
+        .category-count {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 2px 8px;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .category-item.active .category-count {
+            background: var(--primary);
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .media-filter {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .media-btn {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            padding: 8px 0;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-family: var(--font-sans);
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .media-btn:hover {
+            border-color: rgba(212, 175, 55, 0.3);
+            color: var(--text-main);
+        }
+
+        .media-btn.active {
+            border-color: var(--primary);
+            background: rgba(212, 175, 55, 0.1);
+            color: var(--primary-light);
+            font-weight: 500;
+        }
+
+        /* MIND-MAP CANVAS AREA */
+        .mindmap-container {
+            flex: 1;
+            position: relative;
+            height: 100%;
+            width: 100%;
+            outline: none;
+        }
+
+        .mindmap-svg {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+
+        .mindmap-svg:active {
+            cursor: grabbing;
+        }
+
+        /* ZOOM CONTROLS */
+        .zoom-controls {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 5;
+        }
+
+        .zoom-btn {
+            width: 38px;
+            height: 38px;
+            background: rgba(18, 18, 24, 0.8);
+            border: 1px solid var(--border-glass);
+            border-radius: 50%;
+            color: var(--text-main);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .zoom-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary-light);
+            box-shadow: var(--glow);
+            transform: translateY(-2px);
+        }
+
+        /* NODES AND LINKS STYLE */
+        .link {
+            stroke: rgba(212, 175, 55, 0.18);
+            stroke-width: 1.5px;
+            fill: none;
+            transition: stroke 0.3s, stroke-width 0.3s;
+        }
+
+        .link.active {
+            stroke: var(--primary);
+            stroke-width: 2.5px;
+            stroke-dasharray: 4,4;
+            animation: dash 30s linear infinite;
+        }
+
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -1000;
+            }
+        }
+
+        .link.faded {
+            stroke: rgba(255, 255, 255, 0.02);
+            stroke-width: 0.8px;
+        }
+
+        .node {
+            cursor: pointer;
+        }
+
+        .node circle {
+            transition: var(--transition);
+        }
+
+        /* Center Node */
+        .node-center circle {
+            fill: #0c0c10;
+            stroke: var(--primary);
+            stroke-width: 3px;
+            filter: drop-shadow(0px 0px 8px rgba(212, 175, 55, 0.4));
+        }
+
+        .node-center:hover circle {
+            stroke-width: 4px;
+            filter: drop-shadow(0px 0px 15px rgba(212, 175, 55, 0.8));
+        }
+
+        .node-center text {
+            font-family: var(--font-serif);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            fill: var(--primary-light);
+            text-anchor: middle;
+            pointer-events: none;
+        }
+
+        /* Year Node */
+        .node-year circle {
+            fill: #15151c;
+            stroke: rgba(212, 175, 55, 0.5);
+            stroke-width: 2px;
+        }
+
+        .node-year:hover circle {
+            stroke: var(--primary);
+            fill: rgba(212, 175, 55, 0.1);
+            filter: drop-shadow(0px 0px 8px rgba(212, 175, 55, 0.5));
+        }
+
+        .node-year text {
+            font-size: 11px;
+            font-weight: 700;
+            fill: var(--text-main);
+            text-anchor: middle;
+            pointer-events: none;
+        }
+
+        /* Item Node */
+        .node-item circle {
+            stroke-width: 1.5px;
+            fill: #181822;
+        }
+
+        .node-item:hover circle {
+            stroke-width: 2.5px;
+            transform: scale(1.2);
+            filter: drop-shadow(0px 0px 6px var(--node-color));
+        }
+
+        .node-item text {
+            font-size: 10px;
+            fill: var(--text-muted);
+            transition: var(--transition);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .node-item:hover text {
+            fill: var(--text-main);
+            font-weight: 500;
+        }
+
+        .node.selected circle {
+            stroke: #fff !important;
+            stroke-width: 3px !important;
+            filter: drop-shadow(0px 0px 12px #fff) !important;
+        }
+
+        .node.faded {
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        /* DETAILS SIDEBAR */
+        .details-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 100vh;
+            width: 480px;
+            background: var(--bg-surface);
+            border-left: 1px solid var(--border-gold);
+            z-index: 100;
+            transform: translateX(100%);
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.6);
+        }
+
+        .details-drawer.open {
+            transform: translateX(0);
+        }
+
+        .drawer-header {
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .drawer-header .tag {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 4px 10px;
+            background: rgba(212, 175, 55, 0.15);
+            border: 1px solid var(--primary);
+            color: var(--primary-light);
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .drawer-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-glass);
+        }
+
+        .drawer-close:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: rgba(212, 175, 55, 0.05);
+            transform: rotate(90deg);
+        }
+
+        .drawer-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        /* Custom Scrollbar for Drawer */
+        .drawer-body::-webkit-scrollbar,
+        .filter-panel::-webkit-scrollbar,
+        .gallery-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .drawer-body::-webkit-scrollbar-track,
+        .filter-panel::-webkit-scrollbar-track,
+        .gallery-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .drawer-body::-webkit-scrollbar-thumb,
+        .filter-panel::-webkit-scrollbar-thumb,
+        .gallery-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+        }
+        .drawer-body::-webkit-scrollbar-thumb:hover,
+        .filter-panel::-webkit-scrollbar-thumb:hover,
+        .gallery-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(212, 175, 55, 0.3);
+        }
+
+        .drawer-title h2 {
+            font-family: var(--font-serif);
+            font-size: 26px;
+            font-weight: 500;
+            line-height: 1.3;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .drawer-year {
+            font-size: 13px;
+            color: var(--primary);
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        /* MEDIA DISPLAY */
+        .drawer-media {
+            width: 100%;
+            height: 250px;
+            background: #08080b;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-glass);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .media-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .media-fallback {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #101015 0%, #08080a 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            gap: 15px;
+            padding: 30px;
+            text-align: center;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .fallback-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            pointer-events: none;
+            stroke: var(--primary);
+        }
+
+        .media-fallback svg.fallback-icon {
+            width: 48px;
+            height: 48px;
+            stroke: var(--primary);
+            fill: none;
+            stroke-width: 1.5;
+            filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.4));
+        }
+
+        .media-fallback span {
+            font-family: var(--font-serif);
+            font-size: 14px;
+            letter-spacing: 1px;
+            color: var(--primary-light);
+        }
+
+        .video-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        .video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* STATS & METADATA */
+        .drawer-stats {
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            padding: 15px 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .drawer-stats strong {
+            color: var(--text-main);
+        }
+
+        .drawer-description {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-muted);
+        }
+
+        /* AWARDS LIST */
+        .drawer-awards h4 {
+            font-family: var(--font-serif);
+            font-size: 15px;
+            color: var(--primary-light);
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-glass);
+            padding-bottom: 6px;
+        }
+
+        .awards-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .award-badge {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: rgba(212, 175, 55, 0.03);
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 12px;
+            line-height: 1.4;
+            color: var(--text-main);
+        }
+
+        .award-badge .emoji {
+            font-size: 14px;
+        }
+
+        /* GALLERY GRID VIEW */
+        .gallery-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-base);
+            z-index: 4;
+            display: none;
+            overflow-y: auto;
+            padding: 40px;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto 50px auto;
+        }
+
+        .card {
+            background: rgba(18, 18, 24, 0.4);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: var(--transition);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(212, 175, 55, 0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(212, 175, 55, 0.05);
+        }
+
+        .card-media {
+            height: 180px;
+            position: relative;
+            background: #09090c;
+        }
+
+        .card-media .media-fallback {
+            border-radius: 0;
+        }
+
+        .card-tag {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            background: rgba(7, 7, 9, 0.8);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            padding: 4px 8px;
+            border-radius: 4px;
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            z-index: 2;
+        }
+
+        .card-year {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 10px;
+            font-weight: 700;
+            background: var(--primary);
+            color: var(--text-dark);
+            padding: 4px 10px;
+            border-radius: 20px;
+            z-index: 2;
+            box-shadow: var(--glow);
+        }
+
+        .card-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .card-body h3 {
+            font-family: var(--font-serif);
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--text-main);
+            line-height: 1.4;
+        }
+
+        .card-body p {
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-glass);
+            font-size: 10px;
+            color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* ERA TIMELINE OVERVIEW INFO */
+        .era-banner {
+            background: rgba(212, 175, 55, 0.05);
+            border: 1px solid var(--border-gold);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .era-banner h4 {
+            font-family: var(--font-serif);
+            font-size: 18px;
+            color: var(--primary-light);
+        }
+
+        .era-banner p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* INTRO TOUR OVERLAY */
+        .tour-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(5,5,7,0.9);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .tour-box {
+            width: 550px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-gold);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            box-shadow: var(--glow-strong);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tour-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .tour-logo {
+            font-family: var(--font-serif);
+            font-size: 32px;
+            letter-spacing: 3px;
+            color: var(--text-main);
+        }
+
+        .tour-sub {
+            font-size: 11px;
+            letter-spacing: 4px;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+
+        .tour-desc {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-muted);
+            margin: 10px 0;
+        }
+
+        .tour-btn {
+            background: var(--primary);
+            color: var(--text-dark);
+            border: none;
+            padding: 12px 30px;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: var(--glow);
+        }
+
+        .tour-btn:hover {
+            background: var(--primary-light);
+            box-shadow: var(--glow-strong);
+            transform: translateY(-2px);
+        }
+
+        .nodata-message {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 80px 0;
+            color: var(--text-muted);
+            font-size: 16px;
+            font-family: var(--font-serif);
+        }
+
+        /* SVG FILTERS FOR GLOW EFFECTS */
+        svg defs {
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+    <div class="bg-grid"></div>
+
+    <!-- INTRO TOUR OVERLAY -->
+    <div id="tourOverlay" class="tour-overlay">
+        <div class="tour-box">
+            <div class="tour-sub">20 Years of Design Excellence</div>
+            <div class="tour-logo">Rubenius Interiors</div>
+            <p class="tour-desc">
+                Welcome to the Rubenius Interiors Digital Mind-Map. Explore the evolution of our architectural designs, experiential retail environments, workspace innovations, and academic milestones from 2005 to 2025.
+            </p>
+            <button class="tour-btn" onclick="closeTour()">Enter Experience</button>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="brand">
+            <h1>Rubenius Interiors</h1>
+            <span>Timeline Assets & Data Directory</span>
+        </div>
+        
+        <div class="controls-header">
+            <!-- Search -->
+            <div class="search-container">
+                <input type="text" id="omniSearch" placeholder="Search milestones, projects, awards..." oninput="handleSearch(this.value)">
+                <svg viewBox="0 0 24 24">
+                    <path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"/>
+                </svg>
+            </div>
+
+            <!-- View Toggle -->
+            <div class="view-toggle">
+                <button id="btnMindmap" class="active" onclick="setView('mindmap')">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block; vertical-align:middle; margin-right:4px;">
+                        <path d="M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4M12,18A2,2 0 0,1 10,16A2,2 0 0,1 12,14A2,2 0 0,1 14,16A2,2 0 0,1 12,18M16,12A2,2 0 0,1 18,10A2,2 0 0,1 20,12A2,2 0 0,1 18,14A2,2 0 0,1 16,12M4,12A2,2 0 0,1 6,10A2,2 0 0,1 8,12A2,2 0 0,1 6,14A2,2 0 0,1 4,12Z" />
+                    </svg>
+                    Mind-Map
+                </button>
+                <button id="btnGallery" onclick="setView('gallery')">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block; vertical-align:middle; margin-right:4px;">
+                        <path d="M4,4H10V12H4V4M4,14H10V20H4V14M12,4H20V10H12V4M12,12H20V20H12V12Z" />
+                    </svg>
+                    Gallery
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN WORKSPACE -->
+    <div class="main-content">
+        
+        <!-- SIDE FILTER PANEL -->
+        <div class="filter-panel">
+            <div class="filter-section">
+                <h3>Departments</h3>
+                <div class="category-list" id="categoryList">
+                    <!-- Dynamic Department Filters -->
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <h3>Media Type</h3>
+                <div class="media-filter">
+                    <button class="media-btn active" id="mediaAll" onclick="setMediaFilter('All')">All</button>
+                    <button class="media-btn" id="mediaImages" onclick="setMediaFilter('Image')">Images</button>
+                    <button class="media-btn" id="mediaVideos" onclick="setMediaFilter('Video')">Videos</button>
+                </div>
+            </div>
+
+            <div class="filter-section" style="margin-top: auto; border-top: 1px solid var(--border-glass); padding-top: 20px;">
+                <div style="font-size: 11px; color: var(--text-muted); line-height: 1.6;">
+                    <p style="color: var(--primary-light); font-weight: 500; margin-bottom: 5px;">Mind-Map Operations:</p>
+                    <p>• Scroll to Zoom, Drag to Pan</p>
+                    <p>• Click <strong style="color: var(--primary);">Year Nodes</strong> to collapse / expand branches</p>
+                    <p>• Click <strong style="color: var(--primary);">Outer Items</strong> to view asset descriptions</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MIND-MAP CANVAS -->
+        <div class="mindmap-container" id="mindmapView">
+            <svg class="mindmap-svg" id="mindmapSvg">
+                <defs>
+                    <!-- Glowing SVG Filters -->
+                    <filter id="glow-gold" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="5" result="blur" />
+                        <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+                    <filter id="glow-gold-strong" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="8" result="blur" />
+                        <feComponentTransfer in="blur" result="boost">
+                            <feFuncA type="linear" slope="2"/>
+                        </feComponentTransfer>
+                        <feMerge>
+                            <feMergeNode in="boost" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+                </defs>
+                <g id="mainGroup"></g>
+            </svg>
+
+            <!-- Zoom control HUD -->
+            <div class="zoom-controls">
+                <button class="zoom-btn" onclick="zoomAction(1.3)" title="Zoom In">+</button>
+                <button class="zoom-btn" onclick="zoomAction(0.7)" title="Zoom Out">-</button>
+                <button class="zoom-btn" onclick="resetZoom()" title="Recenter">⟲</button>
+            </div>
+        </div>
+
+        <!-- GALLERY MODE VIEW -->
+        <div class="gallery-container" id="galleryView">
+            <div class="gallery-grid" id="galleryGrid">
+                <!-- Dynamic cards populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- DETAILS SLIDE DRAWER -->
+    <div class="details-drawer" id="detailsDrawer">
+        <div class="drawer-header">
+            <span class="tag" id="drawerTag">Category</span>
+            <button class="drawer-close" onclick="closeDrawer()" title="Close Details">×</button>
+        </div>
+        <div class="drawer-body">
+            <div class="drawer-title">
+                <div class="drawer-year" id="drawerYear">Year 2005</div>
+                <h2 id="drawerTitle">Milestone Name</h2>
+            </div>
+
+            <!-- Image or Video frame -->
+            <div class="drawer-media" id="drawerMedia">
+                <!-- Dynamic Media Content -->
+            </div>
+
+            <!-- Stats/Specs metadata -->
+            <div class="drawer-stats" id="drawerStats">
+                Stats
+            </div>
+
+            <!-- Long description -->
+            <div class="drawer-description" id="drawerDescription">
+                Description
+            </div>
+
+            <!-- Awards and recognitions -->
+            <div class="drawer-awards" id="drawerAwardsSection">
+                <h4>Awards & Recognition</h4>
+                <div class="awards-list" id="drawerAwardsList">
+                    <!-- Badges -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATASET DEFINITION & CONTROLLERS -->
+    <script>
+        // RAW CATALOG DATA LOADED DIRECTLY
+        const timelineData = {
+            center: {
+                title: "Rubenius Interiors",
+                subtitle: "20 Years of Design Excellence",
+                description: "Founded in 2005, Bangalore. Formulating the 'Interior Wellbeing' strategy and utilizing the REDS Shift methodology to sculpt physical workspaces, retail design, and industrial spaces."
+            },
+            eras: {
+                2005: { theme: "Origin", highlights: "Foundational setup of Rubenius" },
+                2016: { theme: "First major recognition", highlights: "Initial design awards & public acclaim" },
+                2017: { theme: "Residential at scale", highlights: "Large-scale luxury home designs" },
+                2018: { theme: "Retail experience", highlights: "Award-winning commercial/retail spaces" },
+                2019: { theme: "Multi-award year", highlights: "Multi-category design recognition" },
+                2020: { theme: "Pandemic response", highlights: "Medical & product design innovation" },
+                2021: { theme: "International stage", highlights: "Global scale and showcase" },
+                2022: { theme: "Workspace innovation", highlights: "Modern office & productivity design" },
+                2023: { theme: "Top 40", highlights: "Named among top design entities" },
+                2024: { theme: "Technology integration", highlights: "Augmented space & tech briefs" },
+                2025: { theme: "Twenty years", highlights: "Celebration of two decades of design excellence" }
+            },
+            items: [
+                // 2005
+                {
+                    id: "2005-1",
+                    year: 2005,
+                    title: "Rubenius brand wordmark",
+                    category: "Founded",
+                    stats: "Founded: 2005 • HQ: Bangalore • Discipline: Experience design",
+                    description: "The studio begins with a single conviction: space is a business instrument, not decoration. The Interior Wellbeing™ philosophy takes root here and quietly sets the foundation for what becomes the REDS methodology.",
+                    image: "file:///goghwiththeflow/images/rubenius/scroll.webp",
+                    mediaType: "Image",
+                    awards: ["🏆 General Milestone"]
+                },
+                {
+                    id: "2005-2",
+                    year: 2005,
+                    title: "Interior Wellbeing strategy",
+                    category: "Founded",
+                    stats: "Founded: 2005 • HQ: Bangalore • Discipline: Experience design",
+                    description: "The studio begins with a single conviction: space is a business instrument, not decoration. The Interior Wellbeing™ philosophy takes root here and quietly sets the foundation for what becomes the REDS methodology.",
+                    image: "file:///goghwiththeflow/images/rubenius/untitled3.webp",
+                    mediaType: "Image",
+                    awards: ["🏆 General Milestone"]
+                },
+                {
+                    id: "2005-3",
+                    year: 2005,
+                    title: "REDS Shift — origin",
+                    category: "Founded",
+                    stats: "Founded: 2005 • HQ: Bangalore • Discipline: Experience design",
+                    description: "The studio begins with a single conviction: space is a business instrument, not decoration. The Interior Wellbeing™ philosophy takes root here and quietly sets the foundation for what becomes the REDS methodology.",
+                    image: "file:///goghwiththeflow/images/rubenius/redsShift12.png",
+                    mediaType: "Image",
+                    awards: ["🏆 General Milestone"]
+                },
+                {
+                    id: "2005-4",
+                    year: 2005,
+                    title: "REDS Shift — practice",
+                    category: "Founded",
+                    stats: "Founded: 2005 • HQ: Bangalore • Discipline: Experience design",
+                    description: "The studio begins with a single conviction: space is a business instrument, not decoration. The Interior Wellbeing™ philosophy takes root here and quietly sets the foundation for what becomes the REDS methodology.",
+                    image: "file:///goghwiththeflow/images/rubenius/redsShift17.png",
+                    mediaType: "Image",
+                    awards: ["🏆 General Milestone"]
+                },
+                // 2016
+                {
+                    id: "2016-1",
+                    year: 2016,
+                    title: "Scaler Innovation Lab",
+                    category: "IQA",
+                    stats: "Award: IQA • Region: Karnataka • Also: Nispana",
+                    description: "Eleven years of work earns the studio its first major regional honour. A Nispana Innovative Award for sustainable smart-cities work lands in the same year.",
+                    image: "file:///goghwiththeflow/images/rubenius/scaler.jpg",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 IQA Award — Excellence in Interior Designing Services — Karnataka",
+                        "🏆 Nispana Innovative — Sustainable Smart Cities Innovations"
+                    ]
+                },
+                {
+                    id: "2016-2",
+                    year: 2016,
+                    title: "Karnataka practice",
+                    category: "IQA",
+                    stats: "Award: IQA • Region: Karnataka • Also: Nispana",
+                    description: "Eleven years of work earns the studio its first major regional honour. A Nispana Innovative Award for sustainable smart-cities work lands in the same year.",
+                    image: "file:///goghwiththeflow/images/rubenius/untitled3.webp",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 IQA Award — Excellence in Interior Designing Services — Karnataka",
+                        "🏆 Nispana Innovative — Sustainable Smart Cities Innovations"
+                    ]
+                },
+                {
+                    id: "2016-3",
+                    year: 2016,
+                    title: "Kewaunee International",
+                    category: "IQA",
+                    stats: "Award: IQA • Region: Karnataka • Also: Nispana",
+                    description: "Eleven years of work earns the studio its first major regional honour. A Nispana Innovative Award for sustainable smart-cities work lands in the same year.",
+                    image: "file:///goghwiththeflow/images/rubenius/kewaunee.avif",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 IQA Award — Excellence in Interior Designing Services — Karnataka",
+                        "🏆 Nispana Innovative — Sustainable Smart Cities Innovations"
+                    ]
+                },
+                {
+                    id: "2016-4",
+                    year: 2016,
+                    title: "REDS Shift — recognition",
+                    category: "IQA",
+                    stats: "Award: IQA • Region: Karnataka • Also: Nispana",
+                    description: "Eleven years of work earns the studio its first major regional honour. A Nispana Innovative Award for sustainable smart-cities work lands in the same year.",
+                    image: "file:///goghwiththeflow/images/rubenius/redsShift21.png",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 IQA Award — Excellence in Interior Designing Services — Karnataka",
+                        "🏆 Nispana Innovative — Sustainable Smart Cities Innovations"
+                    ]
+                },
+                // 2017
+                {
+                    id: "2017-1",
+                    year: 2017,
+                    title: "Residential villa interior",
+                    category: "FOAID",
+                    stats: "FOAID: Best Villa • Recognition: ET Top 5 • Theme: Smart Green",
+                    description: "The studio's first national FOAID win lands for a large villa interior. The Economic Times also recognises Rubenius among India's Top 5 Smart Green Workplaces.",
+                    image: "file:///goghwiththeflow/images/rubenius/scaler.jpg",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 FOAID Awards — Best Residential Villa Large",
+                        "🏆 ET Smart Green Summit — Top 5 Smart Green Workplaces"
+                    ]
+                },
+                {
+                    id: "2017-2",
+                    year: 2017,
+                    title: "Villa detail",
+                    category: "FOAID",
+                    stats: "FOAID: Best Villa • Recognition: ET Top 5 • Theme: Smart Green",
+                    description: "The studio's first national FOAID win lands for a large villa interior. The Economic Times also recognises Rubenius among India's Top 5 Smart Green Workplaces.",
+                    image: "file:///goghwiththeflow/images/rubenius/schneider23.jpg",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 FOAID Awards — Best Residential Villa Large",
+                        "🏆 ET Smart Green Summit — Top 5 Smart Green Workplaces"
+                    ]
+                },
+                {
+                    id: "2017-3",
+                    year: 2017,
+                    title: "REDS Shift — residential",
+                    category: "FOAID",
+                    stats: "FOAID: Best Villa • Recognition: ET Top 5 • Theme: Smart Green",
+                    description: "The studio's first national FOAID win lands for a large villa interior. The Economic Times also recognises Rubenius among India's Top 5 Smart Green Workplaces.",
+                    image: "file:///goghwiththeflow/images/rubenius/redsShift12.png",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 FOAID Awards — Best Residential Villa Large",
+                        "🏆 ET Smart Green Summit — Top 5 Smart Green Workplaces"
+                    ]
+                },
+                {
+                    id: "2017-4",
+                    year: 2017,
+                    title: "Smart green workplace",
+                    category: "FOAID",
+                    stats: "FOAID: Best Villa • Recognition: ET Top 5 • Theme: Smart Green",
+                    description: "The studio's first national FOAID win lands for a large villa interior. The Economic Times also recognises Rubenius among India's Top 5 Smart Green Workplaces.",
+                    image: "file:///goghwiththeflow/images/rubenius/untitled3.webp",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 FOAID Awards — Best Residential Villa Large",
+                        "🏆 ET Smart Green Summit — Top 5 Smart Green Workplaces"
+                    ]
+                },
+                // 2018
+                {
+                    id: "2018-1",
+                    year: 2018,
+                    title: "Retail experience interior",
+                    category: "Retail",
+                    stats: "FOAID: Best Retail • Scope: India • Discipline: Retail",
+                    description: "The studio's first national retail design award. Retail emerges as a strategic discipline within the practice — each store treated as a brand environment, not a fixture programme.",
+                    image: "file:///goghwiththeflow/images/rubenius/kewaunee.avif",
+                    mediaType: "Image",
+                    awards: ["🏆 FOAID Awards — Best Interior Retail — India"]
+                },
+                {
+                    id: "2018-2",
+                    year: 2018,
+                    title: "Retail brand environment",
+                    category: "Retail",
+                    stats: "FOAID: Best Retail • Scope: India • Discipline: Retail",
+                    description: "The studio's first national retail design award. Retail emerges as a strategic discipline within the practice — each store treated as a brand environment, not a fixture programme.",
+                    image: "file:///goghwiththeflow/images/rubenius/schneiderCard.webp",
+                    mediaType: "Image",
+                    awards: ["🏆 FOAID Awards — Best Interior Retail — India"]
+                },
+                {
+                    id: "2018-3",
+                    year: 2018,
+                    title: "REDS Shift — retail",
+                    category: "Retail",
+                    stats: "FOAID: Best Retail • Scope: India • Discipline: Retail",
+                    description: "The studio's first national retail design award. Retail emerges as a strategic discipline within the practice — each store treated as a brand environment, not a fixture programme.",
+                    image: "file:///goghwiththeflow/images/rubenius/redsShift17.png",
+                    mediaType: "Image",
+                    awards: ["🏆 FOAID Awards — Best Interior Retail — India"]
+                },
+                {
+                    id: "2018-4",
+                    year: 2018,
+                    title: "Experience design",
+                    category: "Retail",
+                    stats: "FOAID: Best Retail • Scope: India • Discipline: Retail",
+                    description: "The studio's first national retail design award. Retail emerges as a strategic discipline within the practice — each store treated as a brand environment, not a fixture programme.",
+                    image: "file:///goghwiththeflow/images/rubenius/schneiderCase.avif",
+                    mediaType: "Image",
+                    awards: ["🏆 FOAID Awards — Best Interior Retail — India"]
+                },
+                // 2019
+                {
+                    id: "2019-1",
+                    year: 2019,
+                    title: "Commercial interior",
+                    category: "Awards",
+                    stats: "Awards: 4 • Categories: Retail · Commercial • Year: 2019",
+                    description: "Back-to-back FOAID wins for retail are joined by Young Designer and Creative Minds awards for commercial interiors. The studio's commercial practice gains momentum.",
+                    image: "file:///goghwiththeflow/images/rubenius/schneiderCard.webp",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 FOAID Awards — Best Interior Retail (repeat)",
+                        "🏆 SCCI Awards — Innovation Hub",
+                        "🏆 IA&B Young Designer — Best Commercial Interiors",
+                        "🏆 Creative Minds Next — Best Interiors Commercial"
+                    ]
+                },
+                {
+                    id: "2019-2",
+                    year: 2019,
+                    title: "Retail design — repeat win",
+                    category: "Awards",
+                    stats: "Awards: 4 • Categories: Retail · Commercial • Year: 2019",
+                    description: "Back-to-back FOAID wins for retail are joined by Young Designer and Creative Minds awards for commercial interiors. The studio's commercial practice gains momentum.",
+                    image: "file:///goghwiththeflow/images/rubenius/kewaunee.avif",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 FOAID Awards — Best Interior Retail (repeat)",
+                        "🏆 SCCI Awards — Innovation Hub",
+                        "🏆 IA&B Young Designer — Best Commercial Interiors",
+                        "🏆 Creative Minds Next — Best Interiors Commercial"
+                    ]
+                },
+                {
+                    id: "2019-3",
+                    year: 2019,
+                    title: "REDS Shift — commercial",
+                    category: "Awards",
+                    stats: "Awards: 4 • Categories: Retail · Commercial • Year: 2019",
+                    description: "Back-to-back FOAID wins for retail are joined by Young Designer and Creative Minds awards for commercial interiors. The studio's commercial practice gains momentum.",
+                    image: "file:///goghwiththeflow/images/rubenius/redsShift17.png",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 FOAID Awards — Best Interior Retail (repeat)",
+                        "🏆 SCCI Awards — Innovation Hub",
+                        "🏆 IA&B Young Designer — Best Commercial Interiors",
+                        "🏆 Creative Minds Next — Best Interiors Commercial"
+                    ]
+                },
+                {
+                    id: "2019-4",
+                    year: 2019,
+                    title: "REDS Shift — innovation",
+                    category: "Awards",
+                    stats: "Awards: 4 • Categories: Retail · Commercial • Year: 2019",
+                    description: "Back-to-back FOAID wins for retail are joined by Young Designer and Creative Minds awards for commercial interiors. The studio's commercial practice gains momentum.",
+                    image: "file:///goghwiththeflow/images/rubenius/redsShift21.png",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 FOAID Awards — Best Interior Retail (repeat)",
+                        "🏆 SCCI Awards — Innovation Hub",
+                        "🏆 IA&B Young Designer — Best Commercial Interiors",
+                        "🏆 Creative Minds Next — Best Interiors Commercial"
+                    ]
+                },
+                // 2020
+                {
+                    id: "2020-1",
+                    year: 2020,
+                    title: "REDS Shift — pandemic",
+                    category: "D'Source",
+                    stats: "D'Source: 2 wins • Tech Briefs: 2 wins • Category: Pandemic Product",
+                    description: "When the built world stops, Rubenius turns to product. IIT Bombay's D'Source recognises two distinct pandemic solutions. Tech Briefs adds two 'Most Popular Innovation' awards.",
+                    image: "file:///goghwiththeflow/images/rubenius/redsShift17.png",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 D'Source — IIT Bombay — Winner — Product Solution for Pandemic",
+                        "🏆 D'Source — IIT Bombay — Winner — Isolation Solution for Pandemic",
+                        "🏆 Tech Briefs — Create the Future — Most Popular Innovation — Medical",
+                        "🏆 Tech Briefs — Create the Future — Most Popular Innovation — Product Design"
+                    ]
+                },
+                {
+                    id: "2020-2",
+                    year: 2020,
+                    title: "Pandemic product solution",
+                    category: "D'Source",
+                    stats: "D'Source: 2 wins • Tech Briefs: 2 wins • Category: Pandemic Product",
+                    description: "When the built world stops, Rubenius turns to product. IIT Bombay's D'Source recognises two distinct pandemic solutions. Tech Briefs adds two 'Most Popular Innovation' awards.",
+                    image: "file:///goghwiththeflow/images/rubenius/redsShift21.png",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 D'Source — IIT Bombay — Winner — Product Solution for Pandemic",
+                        "🏆 D'Source — IIT Bombay — Winner — Isolation Solution for Pandemic",
+                        "🏆 Tech Briefs — Create the Future — Most Popular Innovation — Medical",
+                        "🏆 Tech Briefs — Create the Future — Most Popular Innovation — Product Design"
+                    ]
+                },
+                {
+                    id: "2020-3",
+                    year: 2020,
+                    title: "D'Source winning design",
+                    category: "D'Source",
+                    stats: "D'Source: 2 wins • Tech Briefs: 2 wins • Category: Pandemic Product",
+                    description: "When the built world stops, Rubenius turns to product. IIT Bombay's D'Source recognises two distinct pandemic solutions. Tech Briefs adds two 'Most Popular Innovation' awards.",
+                    image: "file:///goghwiththeflow/images/rubenius/untitled3.webp",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 D'Source — IIT Bombay — Winner — Product Solution for Pandemic",
+                        "🏆 D'Source — IIT Bombay — Winner — Isolation Solution for Pandemic",
+                        "🏆 Tech Briefs — Create the Future — Most Popular Innovation — Medical",
+                        "🏆 Tech Briefs — Create the Future — Most Popular Innovation — Product Design"
+                    ]
+                },
+                {
+                    id: "2020-4",
+                    year: 2020,
+                    title: "Watch — Pandemic product walkthrough",
+                    category: "D'Source",
+                    stats: "D'Source: 2 wins • Tech Briefs: 2 wins • Category: Pandemic Product",
+                    description: "When the built world stops, Rubenius turns to product. IIT Bombay's D'Source recognises two distinct pandemic solutions. Tech Briefs adds two 'Most Popular Innovation' awards.",
+                    image: "file:///goghwiththeflow/images/rubenius/redsShift12.png",
+                    mediaType: "Video",
+                    videoUrl: "https://www.youtube.com/embed/videoseries?list=UUJa1fnQh9duhYEBD4VKfWKQ&autoplay=1&rel=0&modestbranding=1",
+                    awards: [
+                        "🏆 D'Source — IIT Bombay — Winner — Product Solution for Pandemic",
+                        "🏆 D'Source — IIT Bombay — Winner — Isolation Solution for Pandemic",
+                        "🏆 Tech Briefs — Create the Future — Most Popular Innovation — Medical",
+                        "🏆 Tech Briefs — Create the Future — Most Popular Innovation — Product Design"
+                    ]
+                },
+                // 2021
+                {
+                    id: "2021-1",
+                    year: 2021,
+                    title: "Lexus public-utility design",
+                    category: "Lexus",
+                    stats: "Lexus: 3 wins • Total: 8+ awards • Year: 2021",
+                    description: "Lexus recognises the studio across Public Utility Design, Design Thinking and Product Design. Kyoorius Design Yatra adds a product win. Eldrock honours residential public space. BSI, Mango and Nestle round out a record year.",
+                    image: "file:///goghwiththeflow/images/rubenius/redsShift21.png",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 Lexus Design Awards — Public Utility Design",
+                        "🏆 Lexus Design Awards — Design Thinking",
+                        "🏆 Lexus Design Awards — Product Design",
+                        "🏆 Kyoorius Design Yatra — Product Design",
+                        "🏆 Eldrock Award — Best in Class — Residential & Public Space",
+                        "🏆 BSI Awards — Winner — Prefab Structure",
+                        "🏆 Mango Award — Reinventing Tents",
+                        "🏆 Nestle India Award — Recognition — COVID Innovations"
+                    ]
+                },
+                {
+                    id: "2021-2",
+                    year: 2021,
+                    title: "Kyoorius product design",
+                    category: "Lexus",
+                    stats: "Lexus: 3 wins • Total: 8+ awards • Year: 2021",
+                    description: "Lexus recognises the studio across Public Utility Design, Design Thinking and Product Design. Kyoorius Design Yatra adds a product win. Eldrock honours residential public space. BSI, Mango and Nestle round out a record year.",
+                    image: "file:///goghwiththeflow/images/rubenius/redsShift12.png",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 Lexus Design Awards — Public Utility Design",
+                        "🏆 Lexus Design Awards — Design Thinking",
+                        "🏆 Lexus Design Awards — Product Design",
+                        "🏆 Kyoorius Design Yatra — Product Design",
+                        "🏆 Eldrock Award — Best in Class — Residential & Public Space",
+                        "🏆 BSI Awards — Winner — Prefab Structure",
+                        "🏆 Mango Award — Reinventing Tents",
+                        "🏆 Nestle India Award — Recognition — COVID Innovations"
+                    ]
+                },
+                {
+                    id: "2021-3",
+                    year: 2021,
+                    title: "Eldrock residential public",
+                    category: "Lexus",
+                    stats: "Lexus: 3 wins • Total: 8+ awards • Year: 2021",
+                    description: "Lexus recognises the studio across Public Utility Design, Design Thinking and Product Design. Kyoorius Design Yatra adds a product win. Eldrock honours residential public space. BSI, Mango and Nestle round out a record year.",
+                    image: "file:///goghwiththeflow/images/rubenius/untitled3.webp",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 Lexus Design Awards — Public Utility Design",
+                        "🏆 Lexus Design Awards — Design Thinking",
+                        "🏆 Lexus Design Awards — Product Design",
+                        "🏆 Kyoorius Design Yatra — Product Design",
+                        "🏆 Eldrock Award — Best in Class — Residential & Public Space",
+                        "🏆 BSI Awards — Winner — Prefab Structure",
+                        "🏆 Mango Award — Reinventing Tents",
+                        "🏆 Nestle India Award — Recognition — COVID Innovations"
+                    ]
+                },
+                {
+                    id: "2021-4",
+                    year: 2021,
+                    title: "Design thinking",
+                    category: "Lexus",
+                    stats: "Lexus: 3 wins • Total: 8+ awards • Year: 2021",
+                    description: "Lexus recognises the studio across Public Utility Design, Design Thinking and Product Design. Kyoorius Design Yatra adds a product win. Eldrock honours residential public space. BSI, Mango and Nestle round out a record year.",
+                    image: "file:///goghwiththeflow/images/rubenius/scaler.jpg",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 Lexus Design Awards — Public Utility Design",
+                        "🏆 Lexus Design Awards — Design Thinking",
+                        "🏆 Lexus Design Awards — Product Design",
+                        "🏆 Kyoorius Design Yatra — Product Design",
+                        "🏆 Eldrock Award — Best in Class — Residential & Public Space",
+                        "🏆 BSI Awards — Winner — Prefab Structure",
+                        "🏆 Mango Award — Reinventing Tents",
+                        "🏆 Nestle India Award — Recognition — COVID Innovations"
+                    ]
+                },
+                // 2022
+                {
+                    id: "2022-1",
+                    year: 2022,
+                    title: "Watch — Schneider Experience Centre tour",
+                    category: "Workspace",
+                    stats: "Spaciux: Platinum • Schneider: 3,000 sqft • Format: AI · IoT",
+                    description: "A 3,000-sqft Schneider Electric Experience Centre showcases voice-activated AI, parametric audio and IoT — winning FOAID's Innovative Experience Centre of the Year. Spaciux Platinum, Young Designer of the Year and A.C.E.D. recognitions follow.",
+                    image: "file:///goghwiththeflow/images/rubenius/schneiderCase.avif",
+                    mediaType: "Video",
+                    videoUrl: "https://www.youtube.com/embed/videoseries?list=UUJa1fnQh9duhYEBD4VKfWKQ&autoplay=1&rel=0&modestbranding=1",
+                    awards: [
+                        "🏆 Spaciux Platinum Awards — Large Work Space Design",
+                        "🏆 Young Designer of the Year — Commercial Design",
+                        "🏆 Innovation at the Workspace — Commercial Design",
+                        "🏆 A.C.E.D. — Best Colour Palette — Commercial",
+                        "🏆 Lexus Design Award — Finalist — Design Thinking"
+                    ]
+                },
+                {
+                    id: "2022-2",
+                    year: 2022,
+                    title: "Schneider — voice AI",
+                    category: "Workspace",
+                    stats: "Spaciux: Platinum • Schneider: 3,000 sqft • Format: AI · IoT",
+                    description: "A 3,000-sqft Schneider Electric Experience Centre showcases voice-activated AI, parametric audio and IoT — winning FOAID's Innovative Experience Centre of the Year. Spaciux Platinum, Young Designer of the Year and A.C.E.D. recognitions follow.",
+                    image: "file:///goghwiththeflow/images/rubenius/schneider9.jpg",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 Spaciux Platinum Awards — Large Work Space Design",
+                        "🏆 Young Designer of the Year — Commercial Design",
+                        "🏆 Innovation at the Workspace — Commercial Design",
+                        "🏆 A.C.E.D. — Best Colour Palette — Commercial",
+                        "🏆 Lexus Design Award — Finalist — Design Thinking"
+                    ]
+                },
+                {
+                    id: "2022-3",
+                    year: 2022,
+                    title: "Schneider — parametric audio",
+                    category: "Workspace",
+                    stats: "Spaciux: Platinum • Schneider: 3,000 sqft • Format: AI · IoT",
+                    description: "A 3,000-sqft Schneider Electric Experience Centre showcases voice-activated AI, parametric audio and IoT — winning FOAID's Innovative Experience Centre of the Year. Spaciux Platinum, Young Designer of the Year and A.C.E.D. recognitions follow.",
+                    image: "file:///goghwiththeflow/images/rubenius/schneider8.webp",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 Spaciux Platinum Awards — Large Work Space Design",
+                        "🏆 Young Designer of the Year — Commercial Design",
+                        "🏆 Innovation at the Workspace — Commercial Design",
+                        "🏆 A.C.E.D. — Best Colour Palette — Commercial",
+                        "🏆 Lexus Design Award — Finalist — Design Thinking"
+                    ]
+                },
+                {
+                    id: "2022-4",
+                    year: 2022,
+                    title: "Schneider — anamorphic lighting",
+                    category: "Workspace",
+                    stats: "Spaciux: Platinum • Schneider: 3,000 sqft • Format: AI · IoT",
+                    description: "A 3,000-sqft Schneider Electric Experience Centre showcases voice-activated AI, parametric audio and IoT — winning FOAID's Innovative Experience Centre of the Year. Spaciux Platinum, Young Designer of the Year and A.C.E.D. recognitions follow.",
+                    image: "file:///goghwiththeflow/images/rubenius/schneider14.avif",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 Spaciux Platinum Awards — Large Work Space Design",
+                        "🏆 Young Designer of the Year — Commercial Design",
+                        "🏆 Innovation at the Workspace — Commercial Design",
+                        "🏆 A.C.E.D. — Best Colour Palette — Commercial",
+                        "🏆 Lexus Design Award — Finalist — Design Thinking"
+                    ]
+                },
+                // 2023
+                {
+                    id: "2023-1",
+                    year: 2023,
+                    title: "Scaler Innovation Lab — Future Design",
+                    category: "Industry",
+                    stats: "IGEN: Top 40 • FOAID: India 10 • Industry: Contractor of the Year",
+                    description: "Construction Week names Rubenius Interior Contractor of the Year. Architect & Interiors India recognises the studio for Future Design. FOAID's India 10 names it among the country's top retail interior practices.",
+                    image: "file:///goghwiththeflow/images/rubenius/scaler.jpg",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 IGEN — India's Top 40 Best Designer",
+                        "🏆 FOAID India 10 — Interior Retail",
+                        "🏆 Construction Week — Interior Contractor of the Year",
+                        "🏆 Architect & Interiors India — Future Design",
+                        "🏆 Geevees — Commercial Design"
+                    ]
+                },
+                {
+                    id: "2023-2",
+                    year: 2023,
+                    title: "Kewaunee International — retail",
+                    category: "Industry",
+                    stats: "IGEN: Top 40 • FOAID: India 10 • Industry: Contractor of the Year",
+                    description: "Construction Week names Rubenius Interior Contractor of the Year. Architect & Interiors India recognises the studio for Future Design. FOAID's India 10 names it among the country's top retail interior practices.",
+                    image: "file:///goghwiththeflow/images/rubenius/kewaunee.avif",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 IGEN — India's Top 40 Best Designer",
+                        "🏆 FOAID India 10 — Interior Retail",
+                        "🏆 Construction Week — Interior Contractor of the Year",
+                        "🏆 Architect & Interiors India — Future Design",
+                        "🏆 Geevees — Commercial Design"
+                    ]
+                },
+                {
+                    id: "2023-3",
+                    year: 2023,
+                    title: "Schneider Centre detail",
+                    category: "Industry",
+                    stats: "IGEN: Top 40 • FOAID: India 10 • Industry: Contractor of the Year",
+                    description: "Construction Week names Rubenius Interior Contractor of the Year. Architect & Interiors India recognises the studio for Future Design. FOAID's India 10 names it among the country's top retail interior practices.",
+                    image: "file:///goghwiththeflow/images/rubenius/schneider7.webp",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 IGEN — India's Top 40 Best Designer",
+                        "🏆 FOAID India 10 — Interior Retail",
+                        "🏆 Construction Week — Interior Contractor of the Year",
+                        "🏆 Architect & Interiors India — Future Design",
+                        "🏆 Geevees — Commercial Design"
+                    ]
+                },
+                {
+                    id: "2023-4",
+                    year: 2023,
+                    title: "Interior contracting craft",
+                    category: "Industry",
+                    stats: "IGEN: Top 40 • FOAID: India 10 • Industry: Contractor of the Year",
+                    description: "Construction Week names Rubenius Interior Contractor of the Year. Architect & Interiors India recognises the studio for Future Design. FOAID's India 10 names it among the country's top retail interior practices.",
+                    image: "file:///goghwiththeflow/images/rubenius/schneider13.webp",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 IGEN — India's Top 40 Best Designer",
+                        "🏆 FOAID India 10 — Interior Retail",
+                        "🏆 Construction Week — Interior Contractor of the Year",
+                        "🏆 Architect & Interiors India — Future Design",
+                        "🏆 Geevees — Commercial Design"
+                    ]
+                },
+                // 2024
+                {
+                    id: "2024-1",
+                    year: 2024,
+                    title: "Schneider — IoT integration",
+                    category: "Innovation",
+                    stats: "Awards: 3 • Milestone: Tech Integration • Format: Spaceiux · FOAID",
+                    description: "The studio's interactive and immersive practice — combining hardware, software and physical space — earns a Design Milestone Award. Spaceiux recognises shopping-space design and FOAID adds a Bronze.",
+                    image: "file:///goghwiththeflow/images/rubenius/schneider10.avif",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 Design Milestone Award — Innovative Technology Integration",
+                        "🏆 Spaceiux — Shopping Space",
+                        "🏆 FOAID — Bronze"
+                    ]
+                },
+                {
+                    id: "2024-2",
+                    year: 2024,
+                    title: "Technology integration",
+                    category: "Innovation",
+                    stats: "Awards: 3 • Milestone: Tech Integration • Format: Spaceiux · FOAID",
+                    description: "The studio's interactive and immersive practice — combining hardware, software and physical space — earns a Design Milestone Award. Spaceiux recognises shopping-space design and FOAID adds a Bronze.",
+                    image: "file:///goghwiththeflow/images/rubenius/schneider14.avif",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 Design Milestone Award — Innovative Technology Integration",
+                        "🏆 Spaceiux — Shopping Space",
+                        "🏆 FOAID — Bronze"
+                    ]
+                },
+                {
+                    id: "2024-3",
+                    year: 2024,
+                    title: "Watch — Interactive technology showcase",
+                    category: "Innovation",
+                    stats: "Awards: 3 • Milestone: Tech Integration • Format: Spaceiux · FOAID",
+                    description: "The studio's interactive and immersive practice — combining hardware, software and physical space — earns a Design Milestone Award. Spaceiux recognises shopping-space design and FOAID adds a Bronze.",
+                    image: "file:///goghwiththeflow/images/rubenius/schneider23.jpg",
+                    mediaType: "Video",
+                    videoUrl: "https://www.youtube.com/embed/videoseries?list=UUJa1fnQh9duhYEBD4VKfWKQ&autoplay=1&rel=0&modestbranding=1",
+                    awards: [
+                        "🏆 Design Milestone Award — Innovative Technology Integration",
+                        "🏆 Spaceiux — Shopping Space",
+                        "🏆 FOAID — Bronze"
+                    ]
+                },
+                {
+                    id: "2024-4",
+                    year: 2024,
+                    title: "Innovative experience centre",
+                    category: "Innovation",
+                    stats: "Awards: 3 • Milestone: Tech Integration • Format: Spaceiux · FOAID",
+                    description: "The studio's interactive and immersive practice — combining hardware, software and physical space — earns a Design Milestone Award. Spaceiux recognises shopping-space design and FOAID adds a Bronze.",
+                    image: "file:///goghwiththeflow/images/rubenius/schneiderCard.webp",
+                    mediaType: "Image",
+                    awards: [
+                        "🏆 Design Milestone Award — Innovative Technology Integration",
+                        "🏆 Spaceiux — Shopping Space",
+                        "🏆 FOAID — Bronze"
+                    ]
+                },
+                // 2025
+                {
+                    id: "2025-1",
+                    year: 2025,
+                    title: "On going project — Scaler",
+                    category: "Current",
+                    stats: "FOAID: On Going • Year: 2025 • Anniversary: 20 years",
+                    description: "A project still in motion enters the FOAID circuit. Twenty years on, the practice continues to treat every brief as a chance to shape how a brand is remembered.",
+                    image: "file:///goghwiththeflow/images/rubenius/scaler.jpg",
+                    mediaType: "Image",
+                    awards: ["🏆 FOAID — On Going Project"]
+                },
+                {
+                    id: "2025-2",
+                    year: 2025,
+                    title: "Current work — Kewaunee",
+                    category: "Current",
+                    stats: "FOAID: On Going • Year: 2025 • Anniversary: 20 years",
+                    description: "A project still in motion enters the FOAID circuit. Twenty years on, the practice continues to treat every brief as a chance to shape how a brand is remembered.",
+                    image: "file:///goghwiththeflow/images/rubenius/kewaunee.avif",
+                    mediaType: "Image",
+                    awards: ["🏆 FOAID — On Going Project"]
+                },
+                {
+                    id: "2025-3",
+                    year: 2025,
+                    title: "Twenty-year anniversary",
+                    category: "Current",
+                    stats: "FOAID: On Going • Year: 2025 • Anniversary: 20 years",
+                    description: "A project still in motion enters the FOAID circuit. Twenty years on, the practice continues to treat every brief as a chance to shape how a brand is remembered.",
+                    image: "file:///goghwiththeflow/images/rubenius/untitled3.webp",
+                    mediaType: "Image",
+                    awards: ["🏆 FOAID — On Going Project"]
+                },
+                {
+                    id: "2025-4",
+                    year: 2025,
+                    title: "REDS — still shaping memory",
+                    category: "Current",
+                    stats: "FOAID: On Going • Year: 2025 • Anniversary: 20 years",
+                    description: "A project still in motion enters the FOAID circuit. Twenty years on, the practice continues to treat every brief as a chance to shape how a brand is remembered.",
+                    image: "file:///goghwiththeflow/images/rubenius/redsShift12.png",
+                    mediaType: "Image",
+                    awards: ["🏆 FOAID — On Going Project"]
+                }
+            ]
+        };
+
+        // Department-wise color codes and icons
+        const categoryMeta = {
+            "Founded":   { color: "#d4af37", icon: "M12 2L2 22h20L12 2zm0 3.99L19.53 19H4.47L12 5.99z" }, // Triangle / Origin
+            "IQA":       { color: "#4a90e2", icon: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" }, // Info / Regional
+            "FOAID":     { color: "#50e3c2", icon: "M12 3L1 9l11 6 9-4.91V17h2V9L12 3z M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" }, // Academy / Villa
+            "Retail":    { color: "#f5a623", icon: "M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z" }, // Shop
+            "Awards":    { color: "#b8e986", icon: "M12 2a5 5 0 0 1 5 5c0 2.5-1.5 4.5-4 5v3h3a2 2 0 0 1 2 2v2H6v-2a2 2 0 0 1 2-2h3v-3c-2.5-.5-4-2.5-4-5a5 5 0 0 1 5-5z" }, // Trophy
+            "D'Source":  { color: "#bd10e0", icon: "M20.5 11H19V7c0-1.1-.9-2-2-2h-4V3.5a1.5 1.5 0 0 0-3 0V5H6c-1.1 0-2 .9-2 2v4H2.5a1.5 1.5 0 0 0 0 3H4v4c0 1.1.9 2 2 2h4v1.5a1.5 1.5 0 0 0 3 0V20h4c1.1 0 2-.9 2-2v-4h1.5a1.5 1.5 0 0 0 0-3z" }, // Product/Pandemic
+            "Lexus":     { color: "#9013fe", icon: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" }, // Global Lexus
+            "Workspace": { color: "#e84a5f", icon: "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm6 12H6v-1c0-2 4-3.1 6-3.1s6 1.1 6 3.1v1z" }, // Office
+            "Industry":  { color: "#f38181", icon: "M22 19H2v-2h1v-4l-1-4V7h20v2l-1 4v4h1v2zm-4-2v-4h-2v4h2zm-4 0v-4H8v4h6zm-8 0v-4H4v4h2z" }, // Contractor / Build
+            "Innovation":{ color: "#00adb5", icon: "M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6C7.8 12.16 7 10.65 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.65-.8 3.16-2.15 4.1z" }, // Augmented / Tech
+            "Current":   { color: "#a8df8e", icon: "M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" } // Future / Anniversary
+        };
+
+        // GLOBAL CONTROLLER STATE
+        let activeView = 'mindmap'; // 'mindmap' | 'gallery'
+        let currentSearch = '';
+        let activeCategories = new Set();
+        let activeMediaFilter = 'All'; // 'All' | 'Image' | 'Video'
+        let selectedNodeId = null;
+        let collapsedYears = new Set([2005, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]); // Collapse most by default to keep clean
+
+        // SVG/D3 variables
+        let svg, mainGroup, simulation, zoomBehavior;
+        let width, height;
+
+        // ONCE DOM LOADS
+        window.addEventListener('DOMContentLoaded', () => {
+            width = document.getElementById('mindmapView').clientWidth;
+            height = document.getElementById('mindmapView').clientHeight;
+            
+            initD3();
+            populateFilters();
+            renderGallery();
+            
+            // Check if tour has been seen
+            if (localStorage.getItem('rubenius_tour_completed')) {
+                document.getElementById('tourOverlay').style.display = 'none';
+            }
+        });
+
+        function closeTour() {
+            const overlay = document.getElementById('tourOverlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                localStorage.setItem('rubenius_tour_completed', 'true');
+            }, 500);
+        }
+
+        // GENERATE FALLBACK VECTOR GRAPHICS
+        function generateFallbackSVG(category, title) {
+            const meta = categoryMeta[category] || { color: '#d4af37', icon: '' };
+            return `
+                <div class="media-fallback">
+                    <svg class="fallback-pattern" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <defs>
+                            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                                <path d="M 20 0 L 0 0 0 20" fill="none" width="1" />
+                            </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#grid)" />
+                        <circle cx="50" cy="50" r="35" fill="none" stroke-width="0.5" />
+                        <circle cx="50" cy="50" r="45" fill="none" stroke-width="0.2" stroke-dasharray="2, 2" />
+                    </svg>
+                    <svg class="fallback-icon" viewBox="0 0 24 24">
+                        <path d="${meta.icon}" />
+                    </svg>
+                    <span>${title}</span>
+                </div>
+            `;
+        }
+
+        // POPULATE THE DEPARTMENTS/CATEGORIES FILTER PANEL
+        function populateFilters() {
+            const categories = {};
+            timelineData.items.forEach(item => {
+                categories[item.category] = (categories[item.category] || 0) + 1;
+            });
+
+            const listContainer = document.getElementById('categoryList');
+            listContainer.innerHTML = '';
+
+            Object.entries(categories).forEach(([cat, count]) => {
+                const meta = categoryMeta[cat] || { color: '#d4af37' };
+                const item = document.createElement('div');
+                item.className = 'category-item';
+                item.id = `cat-${cat}`;
+                item.onclick = () => toggleCategory(cat);
+
+                item.innerHTML = `
+                    <div style="display:flex; align-items:center;">
+                        <span class="category-dot" style="background-color: ${meta.color};"></span>
+                        <span>${cat}</span>
+                    </div>
+                    <span class="category-count">${count}</span>
+                `;
+                listContainer.appendChild(item);
+            });
+        }
+
+        // TOGGLE CATEGORY FILTERS
+        function toggleCategory(cat) {
+            const item = document.getElementById(`cat-${cat}`);
+            if (activeCategories.has(cat)) {
+                activeCategories.delete(cat);
+                item.classList.remove('active');
+            } else {
+                activeCategories.add(cat);
+                item.classList.add('active');
+            }
+            applyFilters();
+        }
+
+        // SET MEDIA FILTER (ALL / IMAGE / VIDEO)
+        function setMediaFilter(type) {
+            activeMediaFilter = type;
+            document.querySelectorAll('.media-btn').forEach(btn => btn.classList.remove('active'));
+            if (type === 'All') document.getElementById('mediaAll').classList.add('active');
+            if (type === 'Image') document.getElementById('mediaImages').classList.add('active');
+            if (type === 'Video') document.getElementById('mediaVideos').classList.add('active');
+            applyFilters();
+        }
+
+        // SEARCH BAR INPUT HANDLER
+        function handleSearch(val) {
+            currentSearch = val.toLowerCase().trim();
+            applyFilters();
+        }
+
+        // VIEW TOGGLE CONTROL (MINDMAP / GALLERY)
+        function setView(view) {
+            activeView = view;
+            document.getElementById('btnMindmap').classList.remove('active');
+            document.getElementById('btnGallery').classList.remove('active');
+            
+            if (view === 'mindmap') {
+                document.getElementById('btnMindmap').classList.add('active');
+                document.getElementById('mindmapView').style.display = 'block';
+                document.getElementById('galleryView').style.display = 'none';
+                updateD3Graph(); // refresh mindmap positions
+            } else {
+                document.getElementById('btnGallery').classList.add('active');
+                document.getElementById('mindmapView').style.display = 'none';
+                document.getElementById('galleryView').style.display = 'block';
+                renderGallery(); // redraw gallery with active filters
+            }
+        }
+
+        // MASTER FILTER APPLICATION
+        function applyFilters() {
+            if (activeView === 'mindmap') {
+                updateD3Graph();
+            } else {
+                renderGallery();
+            }
+        }
+
+        // DETERMINES IF AN ITEM PASSES ALL FILTERS
+        function itemPassesFilters(item) {
+            // Category Filter
+            if (activeCategories.size > 0 && !activeCategories.has(item.category)) {
+                return false;
+            }
+            // Media Filter
+            if (activeMediaFilter !== 'All' && item.mediaType !== activeMediaFilter) {
+                return false;
+            }
+            // Search Filter
+            if (currentSearch) {
+                const searchTxt = (item.title + ' ' + item.description + ' ' + item.category + ' ' + item.awards.join(' ') + ' ' + item.stats).toLowerCase();
+                if (!searchTxt.includes(currentSearch)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // DETAILS PANEL (SIDE DRAWER) MANAGEMENT
+        function openDrawer(nodeData) {
+            const drawer = document.getElementById('detailsDrawer');
+            
+            if (nodeData.type === 'center') {
+                document.getElementById('drawerTag').innerText = "Studio Profile";
+                document.getElementById('drawerTag').style.backgroundColor = "rgba(212, 175, 55, 0.15)";
+                document.getElementById('drawerTag').style.borderColor = "var(--primary)";
+                document.getElementById('drawerYear').innerText = "EST. 2005";
+                document.getElementById('drawerTitle').innerText = nodeData.title;
+                document.getElementById('drawerStats').innerHTML = `<strong>Headquarters:</strong> Bangalore, India <br><strong>Timeline Focus:</strong> 20 Years of Design Excellence`;
+                document.getElementById('drawerDescription').innerText = nodeData.description;
+                document.getElementById('drawerMedia').innerHTML = generateFallbackSVG('Founded', 'Rubenius Interiors');
+                document.getElementById('drawerAwardsSection').style.display = 'none';
+                
+            } else if (nodeData.type === 'year') {
+                const era = timelineData.eras[nodeData.year];
+                document.getElementById('drawerTag').innerText = "Era Milestone";
+                document.getElementById('drawerTag').style.backgroundColor = "rgba(212, 175, 55, 0.15)";
+                document.getElementById('drawerTag').style.borderColor = "var(--primary)";
+                document.getElementById('drawerYear').innerText = `Year ${nodeData.year}`;
+                document.getElementById('drawerTitle').innerText = era.theme;
+                document.getElementById('drawerStats').innerHTML = `<strong>Major Highlights:</strong> ${era.highlights}`;
+                document.getElementById('drawerDescription').innerText = `This period defines the theme: "${era.theme}". Scroll through the mind-map outer nodes to see specific project commissions, design methodologies (REDS Shift), and key achievements during this year.`;
+                document.getElementById('drawerMedia').innerHTML = generateFallbackSVG('Founded', `Era ${nodeData.year}`);
+                document.getElementById('drawerAwardsSection').style.display = 'none';
+                
+            } else if (nodeData.type === 'item') {
+                const item = nodeData.raw;
+                const meta = categoryMeta[item.category] || { color: '#d4af37' };
+                
+                document.getElementById('drawerTag').innerText = item.category;
+                document.getElementById('drawerTag').style.backgroundColor = `${meta.color}25`;
+                document.getElementById('drawerTag').style.borderColor = meta.color;
+                
+                document.getElementById('drawerYear').innerText = `Year ${item.year}`;
+                document.getElementById('drawerTitle').innerText = item.title;
+                document.getElementById('drawerStats').innerHTML = item.stats.split(' • ').map(s => `• ${s}`).join('<br>');
+                document.getElementById('drawerDescription').innerText = item.description;
+
+                // Load Media Frame
+                if (item.mediaType === 'Video') {
+                    document.getElementById('drawerMedia').innerHTML = `
+                        <div class="video-container">
+                            <iframe src="${item.videoUrl}" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                        </div>
+                    `;
+                } else {
+                    // Try to load local file, but attach dynamic error-handler for safety
+                    document.getElementById('drawerMedia').innerHTML = `
+                        <img class="media-image" src="${item.image}" alt="${item.title}" 
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div style="display:none; width:100%; height:100%;">
+                            ${generateFallbackSVG(item.category, item.title)}
+                        </div>
+                    `;
+                }
+
+                // Render Awards
+                const awardsContainer = document.getElementById('drawerAwardsList');
+                awardsContainer.innerHTML = '';
+                if (item.awards && item.awards.length > 0) {
+                    document.getElementById('drawerAwardsSection').style.display = 'block';
+                    item.awards.forEach(award => {
+                        const div = document.createElement('div');
+                        div.className = 'award-badge';
+                        div.innerHTML = `
+                            <span class="emoji">🏆</span>
+                            <span>${award.replace(/^🏆\s*/, '')}</span>
+                        `;
+                        awardsContainer.appendChild(div);
+                    });
+                } else {
+                    document.getElementById('drawerAwardsSection').style.display = 'none';
+                }
+            }
+
+            drawer.classList.add('open');
+            selectedNodeId = nodeData.id;
+            
+            // Highlight node in SVG
+            d3.selectAll('.node').classed('selected', d => d.id === selectedNodeId);
+        }
+
+        function closeDrawer() {
+            document.getElementById('detailsDrawer').classList.remove('open');
+            selectedNodeId = null;
+            d3.selectAll('.node').classed('selected', false);
+        }
+
+        // GALLERY MODE RENDERER
+        function renderGallery() {
+            const grid = document.getElementById('galleryGrid');
+            grid.innerHTML = '';
+
+            const filteredItems = timelineData.items.filter(itemPassesFilters);
+
+            if (filteredItems.length === 0) {
+                grid.innerHTML = `<div class="nodata-message">No projects found matching the active search or category filters.</div>`;
+                return;
+            }
+
+            filteredItems.forEach(item => {
+                const meta = categoryMeta[item.category] || { color: '#d4af37' };
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => openDrawer({ type: 'item', raw: item, id: `item-${item.id}` });
+
+                let mediaHtml = '';
+                if (item.mediaType === 'Video') {
+                    mediaHtml = `
+                        <div style="width:100%; height:100%; position:relative;">
+                            ${generateFallbackSVG(item.category, item.title)}
+                            <div style="position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center;">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="var(--primary-light)" style="filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    mediaHtml = `
+                        <img class="media-image" src="${item.image}" alt="${item.title}" 
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div style="display:none; width:100%; height:100%;">
+                            ${generateFallbackSVG(item.category, item.title)}
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="card-media">
+                        <span class="card-tag" style="border-color:${meta.color}; color:${meta.color};">${item.category}</span>
+                        <span class="card-year">${item.year}</span>
+                        ${mediaHtml}
+                    </div>
+                    <div class="card-body">
+                        <h3>${item.title}</h3>
+                        <p>${item.description}</p>
+                    </div>
+                    <div class="card-footer">
+                        <span>${item.stats.split(' • ')[2] || 'Experience Design'}</span>
+                        <span style="font-size:12px;">🏆 ${item.awards.length} Award${item.awards.length > 1 ? 's' : ''}</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+
+        // ==========================================
+        // D3.js INTERACTIVE MIND-MAP IMPLEMENTATION
+        // ==========================================
+        function initD3() {
+            const svgEl = d3.select("#mindmapSvg");
+            mainGroup = d3.select("#mainGroup");
+
+            // Setup Zooming & Panning
+            zoomBehavior = d3.zoom()
+                .scaleExtent([0.15, 3])
+                .on("zoom", (event) => {
+                    mainGroup.attr("transform", event.transform);
+                });
+
+            svgEl.call(zoomBehavior);
+            
+            // Initial positioning
+            resetZoom();
+
+            // Set up force simulation
+            simulation = d3.forceSimulation()
+                .force("link", d3.forceLink().id(d => d.id).distance(d => {
+                    if (d.source.type === 'center') return 160; // center to year radius
+                    return 85; // year to item radius
+                }).strength(1.2))
+                .force("charge", d3.forceManyBody().strength(d => {
+                    if (d.type === 'center') return -400;
+                    if (d.type === 'year') return -150;
+                    return -40;
+                }))
+                .force("collide", d3.forceCollide().radius(d => {
+                    if (d.type === 'center') return 70;
+                    if (d.type === 'year') return 35;
+                    return 20;
+                }).strength(0.8))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .on("tick", ticked);
+
+            updateD3Graph();
+        }
+
+        // ZOOM ACTIONS FOR CONTROLS HUD
+        function zoomAction(factor) {
+            d3.select("#mindmapSvg")
+                .transition()
+                .duration(350)
+                .call(zoomBehavior.scaleBy, factor);
+        }
+
+        function resetZoom() {
+            d3.select("#mindmapSvg")
+                .transition()
+                .duration(500)
+                .call(zoomBehavior.transform, d3.zoomIdentity.translate(width / 2 - 120, height / 2).scale(0.85));
+        }
+
+        // GENERATE D3 NODE & LINK DATA BASED ON FILTER STATE
+        function buildGraphData() {
+            const nodes = [];
+            const links = [];
+
+            // 1. Center Root Node
+            const centerNode = {
+                id: "root",
+                type: "center",
+                title: timelineData.center.title,
+                subtitle: timelineData.center.subtitle,
+                description: timelineData.center.description,
+                fx: width / 2, // lock center node in place
+                fy: height / 2
+            };
+            nodes.push(centerNode);
+
+            // 2. Year Nodes (always visible)
+            const yearKeys = Object.keys(timelineData.eras).map(Number).sort((a,b)=>a-b);
+            const yearNodes = {};
+
+            yearKeys.forEach((yr, idx) => {
+                // Arrange years roughly in a circle initially to aid layout convergence
+                const angle = (idx / yearKeys.length) * Math.PI * 2;
+                const r = 160;
+                
+                const yNode = {
+                    id: `year-${yr}`,
+                    type: "year",
+                    year: yr,
+                    x: width / 2 + Math.cos(angle) * r,
+                    y: height / 2 + Math.sin(angle) * r
+                };
+                nodes.push(yNode);
+                yearNodes[yr] = yNode;
+
+                // Link root to year
+                links.push({
+                    source: "root",
+                    target: `year-${yr}`,
+                    type: "root-year"
+                });
+            });
+
+            // 3. Item Nodes (filtered, and only visible if year is expanded)
+            timelineData.items.forEach(item => {
+                const isFilteredIn = itemPassesFilters(item);
+                const isYearExpanded = !collapsedYears.has(item.year);
+
+                if (isFilteredIn && isYearExpanded) {
+                    const iNode = {
+                        id: `item-${item.id}`,
+                        type: "item",
+                        title: item.title,
+                        category: item.category,
+                        year: item.year,
+                        raw: item
+                    };
+                    nodes.push(iNode);
+
+                    links.push({
+                        source: `year-${item.year}`,
+                        target: `item-${item.id}`,
+                        type: "year-item"
+                    });
+                }
+            });
+
+            return { nodes, links };
+        }
+
+        // CORE D3 GRAPH DRAWING AND SIMULATION UPDATE
+        function updateD3Graph() {
+            const { nodes, links } = buildGraphData();
+
+            // Bind links
+            const linkSelection = mainGroup.selectAll(".link")
+                .data(links, d => `${d.source.id || d.source}-${d.target.id || d.target}`);
+
+            // Remove old links
+            linkSelection.exit().remove();
+
+            // Enter new links
+            const linkEnter = linkSelection.enter()
+                .append("path")
+                .attr("class", "link");
+
+            const allLinks = linkEnter.merge(linkSelection);
+
+            // Highlight active/filtered links
+            allLinks.each(function(d) {
+                const element = d3.select(this);
+                // Check if search active, highlight path
+                if (currentSearch && d.type === 'year-item') {
+                    const targetNode = nodes.find(n => n.id === d.target.id || n.id === d.target);
+                    if (targetNode && targetNode.type === 'item') {
+                        element.classed("active", true);
+                        element.classed("faded", false);
+                        return;
+                    }
+                }
+                element.classed("active", false);
+                element.classed("faded", false);
+            });
+
+
+            // Bind nodes
+            const nodeSelection = mainGroup.selectAll(".node")
+                .data(nodes, d => d.id);
+
+            // Remove old nodes
+            nodeSelection.exit().remove();
+
+            // Enter new nodes
+            const nodeEnter = nodeSelection.enter()
+                .append("g")
+                .attr("class", d => `node node-${d.type}`)
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended))
+                .on("click", (event, d) => {
+                    // Prevent drawer open on node drag
+                    if (event.defaultPrevented) return;
+                    
+                    if (d.type === 'year') {
+                        // Toggle collapse / expand year branch
+                        if (collapsedYears.has(d.year)) {
+                            collapsedYears.delete(d.year);
+                        } else {
+                            collapsedYears.add(d.year);
+                        }
+                        updateD3Graph();
+                    }
+                    
+                    openDrawer(d);
+                    event.stopPropagation();
+                });
+
+            // Center Node Enter UI
+            nodeEnter.filter(d => d.type === 'center').each(function() {
+                const group = d3.select(this);
+                group.append("circle").attr("r", 55);
+                group.append("text").attr("dy", -6).text("RUBENIUS");
+                group.append("text").attr("dy", 12).text("INTERIORS").style("font-size", "10px").style("fill", "var(--text-muted)");
+                
+                // Pulse halo
+                group.append("circle")
+                    .attr("r", 65)
+                    .style("fill", "none")
+                    .style("stroke", "var(--primary)")
+                    .style("stroke-opacity", 0.2)
+                    .style("stroke-width", "1px")
+                    .style("pointer-events", "none")
+                    .append("animate")
+                        .attr("attributeName", "r")
+                        .attr("values", "60;80;60")
+                        .attr("dur", "4s")
+                        .attr("repeatCount", "indefinite");
+            });
+
+            // Year Nodes Enter UI
+            nodeEnter.filter(d => d.type === 'year').each(function() {
+                const group = d3.select(this);
+                group.append("circle").attr("r", 20);
+                group.append("text").attr("dy", 4).text(d => d.year);
+                
+                // Add tiny indicator for collapsed/expanded status
+                group.append("circle")
+                    .attr("class", "expand-indicator")
+                    .attr("cx", 0)
+                    .attr("cy", 20)
+                    .attr("r", 4)
+                    .style("fill", d => collapsedYears.has(d.year) ? "var(--primary)" : "var(--text-muted)")
+                    .style("stroke", "var(--bg-base)")
+                    .style("stroke-width", "1px");
+            });
+
+            // Item Nodes Enter UI
+            nodeEnter.filter(d => d.type === 'item').each(function(d) {
+                const group = d3.select(this);
+                const meta = categoryMeta[d.category] || { color: '#d4af37' };
+                
+                group.append("circle")
+                    .attr("r", 8)
+                    .style("fill", meta.color)
+                    .style("stroke", "rgba(0,0,0,0.6)")
+                    .style("stroke-width", "1.5px")
+                    .style("--node-color", meta.color);
+
+                group.append("text")
+                    .attr("dx", 12)
+                    .attr("dy", 4)
+                    .text(d => d.title.length > 20 ? d.title.substring(0,18) + '..' : d.title);
+            });
+
+            const allNodes = nodeEnter.merge(nodeSelection);
+
+            // Set dynamic selection highlight and dim state
+            allNodes.each(function(d) {
+                const el = d3.select(this);
+                el.classed("selected", d.id === selectedNodeId);
+                
+                // If search is active, dim non-matching nodes
+                if (currentSearch && d.type === 'item') {
+                    const searchTxt = (d.title + ' ' + d.raw.description + ' ' + d.category + ' ' + d.raw.awards.join(' ')).toLowerCase();
+                    if (!searchTxt.includes(currentSearch)) {
+                        el.classed("faded", true);
+                    } else {
+                        el.classed("faded", false);
+                    }
+                } else {
+                    el.classed("faded", false);
+                }
+            });
+
+            // Update Expand/Collapse Indicators on existing Year Nodes
+            allNodes.filter(d => d.type === 'year')
+                .select(".expand-indicator")
+                .style("fill", d => collapsedYears.has(d.year) ? "var(--primary)" : "#2a9d8f");
+
+            // Update force simulation data
+            simulation.nodes(nodes);
+            simulation.force("link").links(links);
+            simulation.alpha(0.6).restart();
+        }
+
+        // FORCE SIMULATION TICK HANDLER
+        function ticked() {
+            // Draw curving link lines
+            mainGroup.selectAll(".link")
+                .attr("d", d => {
+                    // Straight lines for year connections, curved elastic cables for item nodes
+                    if (d.type === 'root-year') {
+                        return `M${d.source.x},${d.source.y} L${d.target.x},${d.target.y}`;
+                    } else {
+                        // Smooth Bezier path
+                        const dx = d.target.x - d.source.x;
+                        const dy = d.target.y - d.source.y;
+                        const dr = Math.sqrt(dx * dx + dy * dy) * 1.5;
+                        return `M${d.source.x},${d.source.y} A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`;
+                    }
+                });
+
+            // Position nodes
+            mainGroup.selectAll(".node")
+                .attr("transform", d => `translate(${d.x},${d.y})`);
+        }
+
+        // DRAG FORCE ACTIONS
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.xm = d.x;
+            d.ym = d.y;
+        }
+
+        function dragged(event, d) {
+            d.x = event.x;
+            d.y = event.y;
+            if (d.type === 'center') {
+                d.fx = event.x;
+                d.fy = event.y;
+            }
+        }
+
+        // dragended resets fixed positions except for center node
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            if (d.type === 'center') {
+                d.fx = width / 2; // snap back center
+                d.fy = height / 2;
+            }
+        }
+    </script>
+</body>
+</html>
