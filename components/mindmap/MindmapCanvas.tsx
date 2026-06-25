@@ -72,6 +72,58 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
       return true;
     };
 
+    const hasInitialCenteredRef = useRef(false);
+
+    const centerAndScaleGraph = (transitionDuration = 500) => {
+      if (!svgRef.current || !zoomBehaviorRef.current || !containerRef.current || !simulationRef.current) return;
+      
+      const nodes = simulationRef.current.nodes();
+      if (nodes.length === 0) return;
+
+      let minX = Infinity, maxX = -Infinity;
+      let minY = Infinity, maxY = -Infinity;
+
+      nodes.forEach((node) => {
+        if (node.x !== undefined && node.y !== undefined) {
+          if (node.x < minX) minX = node.x;
+          if (node.x > maxX) maxX = node.x;
+          if (node.y < minY) minY = node.y;
+          if (node.y > maxY) maxY = node.y;
+        }
+      });
+
+      if (minX === Infinity || minY === Infinity) return;
+
+      const graphCenterX = minX + (maxX - minX) / 2;
+      const graphCenterY = minY + (maxY - minY) / 2;
+
+      const w = containerRef.current.clientWidth || 800;
+      const h = containerRef.current.clientHeight || 600;
+
+      const graphWidth = (maxX - minX) || 1;
+      const graphHeight = (maxY - minY) || 1;
+
+      const padding = 80;
+      const scaleX = (w - padding * 2) / graphWidth;
+      const scaleY = (h - padding * 2) / graphHeight;
+      const scale = Math.min(Math.min(scaleX, scaleY), 1.0);
+
+      const transform = d3.zoomIdentity
+        .translate(w / 2 - scale * graphCenterX, h / 2 - scale * graphCenterY)
+        .scale(scale);
+
+      if (transitionDuration > 0) {
+        d3.select(svgRef.current)
+          .transition()
+          .duration(transitionDuration)
+          .ease(d3.easeCubicOut)
+          .call(zoomBehaviorRef.current.transform, transform);
+      } else {
+        d3.select(svgRef.current)
+          .call(zoomBehaviorRef.current.transform, transform);
+      }
+    };
+
     // Zoom handlers exposed to parent
     useImperativeHandle(ref, () => ({
       zoomIn: () => {
@@ -91,17 +143,7 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
         }
       },
       resetZoom: () => {
-        if (svgRef.current && zoomBehaviorRef.current && containerRef.current) {
-          const w = containerRef.current.clientWidth || 800;
-          const h = containerRef.current.clientHeight || 600;
-          d3.select(svgRef.current)
-            .transition()
-            .duration(500)
-            .call(
-              zoomBehaviorRef.current.transform,
-              d3.zoomIdentity.translate(w / 2 - 120, h / 2).scale(0.85)
-            );
-        }
+        centerAndScaleGraph(800);
       },
     }));
 
@@ -164,8 +206,17 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
             })
             .strength(0.8)
         )
-        .force("center", d3.forceCenter(width / 2, height / 2))
-        .on("tick", ticked);
+        .force("center", d3.forceCenter(width / 2, height / 2));
+
+      let ticksCount = 0;
+      simulation.on("tick", () => {
+        ticked();
+        ticksCount++;
+        if (ticksCount === 30 && !hasInitialCenteredRef.current) {
+          hasInitialCenteredRef.current = true;
+          centerAndScaleGraph(0);
+        }
+      });
 
       simulationRef.current = simulation;
 
@@ -186,6 +237,17 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
 
       return () => {
         simulation.stop();
+      };
+    }, []);
+
+    // Resize observer / window resize listener to maintain center positions dynamically
+    useEffect(() => {
+      const handleResize = () => {
+        centerAndScaleGraph(0);
+      };
+      window.addEventListener("resize", handleResize);
+      return () => {
+        window.removeEventListener("resize", handleResize);
       };
     }, []);
 
