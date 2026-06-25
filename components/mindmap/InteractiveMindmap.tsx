@@ -166,27 +166,29 @@ export const InteractiveMindmap: React.FC = () => {
           >
             {isFilterPanelOpen ? "Hide Filters" : "Show Filters"} {isFilterPanelOpen ? "▼" : "▲"}
           </button>
+
+          {activeCategories.size > 0 && (
+            <button
+              style={{
+                position: "absolute",
+                top: "15px",
+                right: "30px",
+                background: "none",
+                border: "none",
+                color: "var(--primary)",
+                fontSize: "11px",
+                cursor: "pointer",
+                textDecoration: "underline",
+                zIndex: 10,
+              }}
+              onClick={() => setActiveCategories(new Set())}
+            >
+              Clear Filters
+            </button>
+          )}
           
           <div className="filter-panel-inner">
             <div className="filter-section">
-              <h3>
-                <span><span>Disciplines</span></span>
-                {activeCategories.size > 0 && (
-                  <button
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "var(--primary)",
-                      fontSize: "10px",
-                      cursor: "pointer",
-                      textDecoration: "underline",
-                    }}
-                    onClick={() => setActiveCategories(new Set())}
-                  >
-                    Clear
-                  </button>
-                )}
-              </h3>
               <div className="category-list">
                 {Object.entries(categoryCounts).map(([cat, count]) => {
                   const meta = categoryMeta[cat] || { color: "#d4af37" };
