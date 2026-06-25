@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo, useRef } from "react";
 import { ZoomControls } from "./ZoomControls";
-import { DetailsDrawer } from "./DetailsDrawer";
 import { MindmapCanvas, MindmapCanvasRef } from "./MindmapCanvas";
 import { timelineData, categoryMeta } from "./data";
 import { TimelineItem } from "./types";
@@ -95,7 +94,6 @@ const render3DIcon = (category: string, color: string) => {
 
 export const InteractiveMindmap: React.FC = () => {
   const [activeCategories, setActiveCategories] = useState<Set<string>>(new Set());
-  const [selectedItem, setSelectedItem] = useState<TimelineItem | null>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [collapsedYears, setCollapsedYears] = useState<Set<number>>(
     new Set([2005, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
@@ -123,13 +121,6 @@ export const InteractiveMindmap: React.FC = () => {
     setActiveCategories(nextCategories);
   };
 
-  const handleSelectItem = (item: TimelineItem | null) => {
-    setSelectedItem(item);
-    if (!item) {
-      setSelectedNodeId(null);
-    }
-  };
-
   return (
     <div className="mindmap-app">
       {/* Background decoration */}
@@ -146,7 +137,6 @@ export const InteractiveMindmap: React.FC = () => {
             activeMediaFilter="All"
             selectedNodeId={selectedNodeId}
             setSelectedNodeId={setSelectedNodeId}
-            onSelectItem={handleSelectItem}
             collapsedYears={collapsedYears}
             setCollapsedYears={setCollapsedYears}
           />
@@ -212,13 +202,6 @@ export const InteractiveMindmap: React.FC = () => {
           </div>
         </aside>
       </div>
-
-      {/* Side drawer for selected item details */}
-      <DetailsDrawer
-        isOpen={selectedItem !== null}
-        onClose={() => handleSelectItem(null)}
-        selectedItem={selectedItem}
-      />
     </div>
   );
 };
