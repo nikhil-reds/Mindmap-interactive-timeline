@@ -29,7 +29,7 @@ export interface TimelineData {
 
 export interface GraphNode extends d3.SimulationNodeDatum {
   id: string;
-  type: "center" | "year" | "item";
+  type: "center" | "year" | "media" | "text" | "awards";
   label: string;
   category?: string;
   year?: number;
@@ -44,5 +44,5 @@ export interface GraphNode extends d3.SimulationNodeDatum {
 export interface GraphLink extends d3.SimulationLinkDatum<GraphNode> {
   source: string | GraphNode;
   target: string | GraphNode;
-  type: "center-era" | "era-item";
+  type: "center-era" | "era-media" | "media-text" | "media-awards";
 }
