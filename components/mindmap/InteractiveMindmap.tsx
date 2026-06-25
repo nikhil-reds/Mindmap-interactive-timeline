@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useMemo, useRef } from "react";
-import { Header } from "./Header";
 import { ZoomControls } from "./ZoomControls";
 import { DetailsDrawer } from "./DetailsDrawer";
 import { MindmapCanvas, MindmapCanvasRef } from "./MindmapCanvas";
@@ -10,7 +9,6 @@ import { TimelineItem } from "./types";
 import "./mindmap.css";
 
 export const InteractiveMindmap: React.FC = () => {
-  const [currentSearch, setCurrentSearch] = useState("");
   const [activeCategories, setActiveCategories] = useState<Set<string>>(new Set());
   const [activeMediaFilter, setActiveMediaFilter] = useState("All");
   const [selectedItem, setSelectedItem] = useState<TimelineItem | null>(null);
@@ -54,18 +52,12 @@ export const InteractiveMindmap: React.FC = () => {
       <div className="bg-glow" />
       <div className="bg-grid" />
 
-      {/* Top Header */}
-      <Header
-        currentSearch={currentSearch}
-        setCurrentSearch={setCurrentSearch}
-      />
-
       <div className={`main-content ${isFilterPanelOpen ? "filters-expanded" : "filters-collapsed"}`}>
         {/* Dynamic Main View */}
         <div className="relative flex-1 h-full w-full">
           <MindmapCanvas
             ref={canvasRef}
-            currentSearch={currentSearch}
+            currentSearch=""
             activeCategories={activeCategories}
             activeMediaFilter={activeMediaFilter}
             selectedNodeId={selectedNodeId}
