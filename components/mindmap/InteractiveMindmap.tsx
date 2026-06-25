@@ -10,7 +10,6 @@ import "./mindmap.css";
 
 export const InteractiveMindmap: React.FC = () => {
   const [activeCategories, setActiveCategories] = useState<Set<string>>(new Set());
-  const [activeMediaFilter, setActiveMediaFilter] = useState("All");
   const [selectedItem, setSelectedItem] = useState<TimelineItem | null>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [collapsedYears, setCollapsedYears] = useState<Set<number>>(
@@ -59,7 +58,7 @@ export const InteractiveMindmap: React.FC = () => {
             ref={canvasRef}
             currentSearch=""
             activeCategories={activeCategories}
-            activeMediaFilter={activeMediaFilter}
+            activeMediaFilter="All"
             selectedNodeId={selectedNodeId}
             setSelectedNodeId={setSelectedNodeId}
             onSelectItem={handleSelectItem}
@@ -124,21 +123,6 @@ export const InteractiveMindmap: React.FC = () => {
                     </div>
                   );
                 })}
-              </div>
-            </div>
-
-            <div className="filter-section">
-              <h3>Media Type</h3>
-              <div className="media-filter">
-                {["All", "Image", "Video"].map((type) => (
-                  <button
-                    key={type}
-                    className={`media-btn ${activeMediaFilter === type ? "active" : ""}`}
-                    onClick={() => setActiveMediaFilter(type)}
-                  >
-                    {type}
-                  </button>
-                ))}
               </div>
             </div>
           </div>
