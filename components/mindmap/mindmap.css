@@ -190,17 +190,17 @@
 /* FILTER PANEL */
 .filter-panel {
     width: 100%;
-    height: 165px;
+    height: 185px;
     padding: 15px 30px;
-    background: linear-gradient(to top, rgba(7, 7, 9, 0.98), rgba(18, 18, 24, 0.95));
-    border-top: 1px solid var(--border-glass);
+    background: rgba(18, 18, 24, 0.45);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
     border-right: none;
     display: flex;
     flex-direction: column;
     z-index: 5;
     position: relative;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     transition: height 0.35s cubic-bezier(0.25, 0.8, 0.25, 1), padding 0.35s ease, border-color 0.35s ease;
 }
 
@@ -215,7 +215,8 @@
     display: flex;
     flex-direction: row;
     gap: 40px;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: center;
     width: 100%;
     height: 100%;
     opacity: 1;
@@ -233,8 +234,8 @@
     top: -30px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(18, 18, 24, 0.95);
-    border: 1px solid var(--border-gold);
+    background: rgba(18, 18, 24, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-bottom: none;
     border-radius: 8px 8px 0 0;
     color: var(--primary-light);
@@ -249,70 +250,97 @@
     gap: 8px;
     box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.5);
     transition: var(--transition);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
 }
 
 .filter-toggle-btn:hover {
     color: var(--primary);
-    box-shadow: 0 -4px 15px rgba(212, 175, 55, 0.3);
-    background: rgba(25, 25, 35, 0.98);
+    box-shadow: 0 -4px 15px rgba(212, 175, 55, 0.2);
+}
+
+.filter-section {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+    gap: 10px;
 }
 
 .filter-section h3 {
     font-family: var(--font-serif);
     font-size: 14px;
     color: var(--primary-light);
-    margin-bottom: 10px;
-    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
     font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
+    text-transform: uppercase;
 }
 
 .category-list {
     display: flex;
     flex-direction: row;
-    flex-wrap: wrap;
-    gap: 8px;
-    max-height: 105px;
-    overflow-y: auto;
-    padding-right: 5px;
+    justify-content: center;
+    gap: 16px;
+    width: 100%;
+    overflow-x: auto;
+    padding: 10px 10px 15px 10px;
 }
 
 .category-item {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    padding: 6px 12px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--border-glass);
-    border-radius: 8px;
+    justify-content: center;
+    width: 95px;
+    height: 105px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
     cursor: pointer;
-    transition: var(--transition);
-    font-size: 11px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-sizing: border-box;
     gap: 8px;
 }
 
 .category-item:hover {
-    border-color: rgba(212, 175, 55, 0.4);
-    background: rgba(212, 175, 55, 0.03);
-    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.07);
+    border-color: var(--glow-color);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px var(--glow-color);
 }
 
 .category-item.active {
-    background: rgba(212, 175, 55, 0.1);
-    border-color: var(--primary);
-    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.09);
+    border-color: var(--glow-color);
+    box-shadow: 0 4px 15px -2px var(--glow-color);
+}
+
+.category-name-wrapper {
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+}
+
+.icon-3d {
+    transition: transform 0.3s ease;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.category-item:hover .icon-3d {
+    transform: scale(1.1) translateZ(0);
 }
 
 .category-dot {
     width: 8px;
     height: 8px;
-    border-radius: 50%;
-    margin-right: 6px;
+    border-radius: 0;
     display: inline-block;
 }
 
