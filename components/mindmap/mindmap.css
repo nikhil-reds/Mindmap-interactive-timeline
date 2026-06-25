@@ -180,6 +180,7 @@
 .main-content {
     flex: 1;
     display: flex;
+    flex-direction: column;
     position: relative;
     overflow: hidden;
     width: 100%;
@@ -188,54 +189,117 @@
 
 /* FILTER PANEL */
 .filter-panel {
-    width: 300px;
-    padding: 20px 30px;
-    background: linear-gradient(to right, rgba(7, 7, 9, 0.95), rgba(7, 7, 9, 0.6));
-    border-right: 1px solid var(--border-glass);
+    width: 100%;
+    height: 165px;
+    padding: 15px 30px;
+    background: linear-gradient(to top, rgba(7, 7, 9, 0.98), rgba(18, 18, 24, 0.95));
+    border-top: 1px solid var(--border-glass);
+    border-right: none;
     display: flex;
     flex-direction: column;
-    gap: 25px;
     z-index: 5;
-    overflow-y: auto;
+    position: relative;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: height 0.35s cubic-bezier(0.25, 0.8, 0.25, 1), padding 0.35s ease, border-color 0.35s ease;
+}
+
+.filter-panel.collapsed {
+    height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-top-color: transparent;
+}
+
+.filter-panel-inner {
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+    align-items: flex-start;
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    transition: opacity 0.25s ease;
+}
+
+.filter-panel.collapsed .filter-panel-inner {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* TOGGLE BUTTON */
+.filter-toggle-btn {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(18, 18, 24, 0.95);
+    border: 1px solid var(--border-gold);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    color: var(--primary-light);
+    padding: 6px 18px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.5);
+    transition: var(--transition);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 }
 
+.filter-toggle-btn:hover {
+    color: var(--primary);
+    box-shadow: 0 -4px 15px rgba(212, 175, 55, 0.3);
+    background: rgba(25, 25, 35, 0.98);
+}
+
 .filter-section h3 {
     font-family: var(--font-serif);
-    font-size: 16px;
+    font-size: 14px;
     color: var(--primary-light);
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     letter-spacing: 0.5px;
     font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 15px;
 }
 
 .category-list {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 8px;
+    max-height: 105px;
+    overflow-y: auto;
+    padding-right: 5px;
 }
 
 .category-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 12px;
+    padding: 6px 12px;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--border-glass);
     border-radius: 8px;
     cursor: pointer;
     transition: var(--transition);
-    font-size: 12px;
+    font-size: 11px;
+    gap: 8px;
 }
 
 .category-item:hover {
     border-color: rgba(212, 175, 55, 0.4);
     background: rgba(212, 175, 55, 0.03);
-    transform: translateX(4px);
+    transform: translateY(-2px);
 }
 
 .category-item.active {
@@ -248,15 +312,15 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    margin-right: 8px;
+    margin-right: 6px;
     display: inline-block;
 }
 
 .category-count {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
-    padding: 2px 8px;
-    font-size: 10px;
+    padding: 1px 6px;
+    font-size: 9px;
     color: var(--text-muted);
 }
 
@@ -267,16 +331,17 @@
 }
 
 .media-filter {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 6px;
+    width: 100px;
 }
 
 .media-btn {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--border-glass);
     border-radius: 8px;
-    padding: 8px 0;
+    padding: 6px 12px;
     color: var(--text-muted);
     font-size: 11px;
     font-family: var(--font-sans);
@@ -542,23 +607,23 @@
 
 /* Custom Scrollbar for Drawer */
 .drawer-body::-webkit-scrollbar,
-.filter-panel::-webkit-scrollbar,
+.category-list::-webkit-scrollbar,
 .gallery-container::-webkit-scrollbar {
     width: 6px;
 }
 .drawer-body::-webkit-scrollbar-track,
-.filter-panel::-webkit-scrollbar-track,
+.category-list::-webkit-scrollbar-track,
 .gallery-container::-webkit-scrollbar-track {
     background: transparent;
 }
 .drawer-body::-webkit-scrollbar-thumb,
-.filter-panel::-webkit-scrollbar-thumb,
+.category-list::-webkit-scrollbar-thumb,
 .gallery-container::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.08);
     border-radius: 10px;
 }
 .drawer-body::-webkit-scrollbar-thumb:hover,
-.filter-panel::-webkit-scrollbar-thumb:hover,
+.category-list::-webkit-scrollbar-thumb:hover,
 .gallery-container::-webkit-scrollbar-thumb:hover {
     background: rgba(212, 175, 55, 0.3);
 }

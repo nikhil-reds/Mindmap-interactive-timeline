@@ -22,6 +22,7 @@ export const InteractiveMindmap: React.FC = () => {
   const [collapsedYears, setCollapsedYears] = useState<Set<number>>(
     new Set([2005, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
   );
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(true);
 
   const canvasRef = useRef<MindmapCanvasRef | null>(null);
 
@@ -99,68 +100,7 @@ export const InteractiveMindmap: React.FC = () => {
         openTour={() => setIsTourOpen(true)}
       />
 
-      <div className="main-content">
-        {/* Left Filter Sidebar */}
-        <aside className="filter-panel">
-          <div className="filter-section">
-            <h3>
-              <span>Disciplines</span>
-              {activeCategories.size > 0 && (
-                <button
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "var(--primary)",
-                    fontSize: "10px",
-                    cursor: "pointer",
-                    textDecoration: "underline",
-                  }}
-                  onClick={() => setActiveCategories(new Set())}
-                >
-                  Clear
-                </button>
-              )}
-            </h3>
-            <div className="category-list">
-              {Object.entries(categoryCounts).map(([cat, count]) => {
-                const meta = categoryMeta[cat] || { color: "#d4af37" };
-                const isActive = activeCategories.has(cat);
-                return (
-                  <div
-                    key={cat}
-                    className={`category-item ${isActive ? "active" : ""}`}
-                    onClick={() => toggleCategory(cat)}
-                  >
-                    <span className="flex items-center">
-                      <span
-                        className="category-dot"
-                        style={{ backgroundColor: meta.color }}
-                      />
-                      {cat}
-                    </span>
-                    <span className="category-count">{count}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="filter-section">
-            <h3>Media Type</h3>
-            <div className="media-filter">
-              {["All", "Image", "Video"].map((type) => (
-                <button
-                  key={type}
-                  className={`media-btn ${activeMediaFilter === type ? "active" : ""}`}
-                  onClick={() => setActiveMediaFilter(type)}
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
-          </div>
-        </aside>
-
+      <div className={`main-content ${isFilterPanelOpen ? "filters-expanded" : "filters-collapsed"}`}>
         {/* Dynamic Main View */}
         {activeView === "mindmap" ? (
           <div className="relative flex-1 h-full w-full">
@@ -188,6 +128,77 @@ export const InteractiveMindmap: React.FC = () => {
             onSelectItem={handleSelectItem}
           />
         )}
+
+        {/* Bottom Filter Sidebar */}
+        <aside className={`filter-panel ${isFilterPanelOpen ? "open" : "collapsed"}`}>
+          <button
+            className="filter-toggle-btn"
+            onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
+            aria-label={isFilterPanelOpen ? "Hide Filters" : "Show Filters"}
+          >
+            {isFilterPanelOpen ? "Hide Filters" : "Show Filters"} {isFilterPanelOpen ? "▼" : "▲"}
+          </button>
+          
+          <div className="filter-panel-inner">
+            <div className="filter-section">
+              <h3>
+                <span>Disciplines</span>
+                {activeCategories.size > 0 && (
+                  <button
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: "var(--primary)",
+                      fontSize: "10px",
+                      cursor: "pointer",
+                      textDecoration: "underline",
+                    }}
+                    onClick={() => setActiveCategories(new Set())}
+                  >
+                    Clear
+                  </button>
+                )}
+              </h3>
+              <div className="category-list">
+                {Object.entries(categoryCounts).map(([cat, count]) => {
+                  const meta = categoryMeta[cat] || { color: "#d4af37" };
+                  const isActive = activeCategories.has(cat);
+                  return (
+                    <div
+                      key={cat}
+                      className={`category-item ${isActive ? "active" : ""}`}
+                      onClick={() => toggleCategory(cat)}
+                    >
+                      <span className="flex items-center">
+                        <span
+                          className="category-dot"
+                          style={{ backgroundColor: meta.color }}
+                        />
+                        {cat}
+                      </span>
+                      <span className="category-count">{count}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="filter-section">
+              <h3>Media Type</h3>
+              <div className="media-filter">
+                {["All", "Image", "Video"].map((type) => (
+                  <button
+                    key={type}
+                    className={`media-btn ${activeMediaFilter === type ? "active" : ""}`}
+                    onClick={() => setActiveMediaFilter(type)}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </aside>
       </div>
 
       {/* Side drawer for selected item details */}
