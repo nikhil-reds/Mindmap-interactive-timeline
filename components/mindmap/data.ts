@@ -28,7 +28,7 @@ export const timelineData: TimelineData = {
       category: "Founded",
       stats: "Founded: 2005 • HQ: Bangalore • Discipline: Experience design",
       description: "The studio begins with a single conviction: space is a business instrument, not decoration. The Interior Wellbeing™ philosophy takes root here and quietly sets the foundation for what becomes the REDS methodology.",
-      image: "/goghwiththeflow/images/rubenius/scroll.webp",
+      image: "/images/rubenius/scroll.webp",
       mediaType: "Image",
       awards: ["General Milestone"]
     },
@@ -39,7 +39,7 @@ export const timelineData: TimelineData = {
       category: "Founded",
       stats: "Founded: 2005 • HQ: Bangalore • Discipline: Experience design",
       description: "The studio begins with a single conviction: space is a business instrument, not decoration. The Interior Wellbeing™ philosophy takes root here and quietly sets the foundation for what becomes the REDS methodology.",
-      image: "/goghwiththeflow/images/rubenius/untitled3.webp",
+      image: "/images/rubenius/untitled3.webp",
       mediaType: "Image",
       awards: ["General Milestone"]
     },
@@ -50,7 +50,7 @@ export const timelineData: TimelineData = {
       category: "Founded",
       stats: "Founded: 2005 • HQ: Bangalore • Discipline: Experience design",
       description: "The studio begins with a single conviction: space is a business instrument, not decoration. The Interior Wellbeing™ philosophy takes root here and quietly sets the foundation for what becomes the REDS methodology.",
-      image: "/goghwiththeflow/images/rubenius/redsShift12.png",
+      image: "/images/rubenius/redsShift12.png",
       mediaType: "Image",
       awards: ["General Milestone"]
     },
@@ -61,7 +61,7 @@ export const timelineData: TimelineData = {
       category: "Founded",
       stats: "Founded: 2005 • HQ: Bangalore • Discipline: Experience design",
       description: "The studio begins with a single conviction: space is a business instrument, not decoration. The Interior Wellbeing™ philosophy takes root here and quietly sets the foundation for what becomes the REDS methodology.",
-      image: "/goghwiththeflow/images/rubenius/redsShift17.png",
+      image: "/images/rubenius/redsShift17.png",
       mediaType: "Image",
       awards: ["General Milestone"]
     },
@@ -73,7 +73,7 @@ export const timelineData: TimelineData = {
       category: "IQA",
       stats: "Award: IQA • Region: Karnataka • Also: Nispana",
       description: "Eleven years of work earns the studio its first major regional honour. A Nispana Innovative Award for sustainable smart-cities work lands in the same year.",
-      image: "/goghwiththeflow/images/rubenius/scaler.jpg",
+      image: "/images/rubenius/scaler.jpg",
       mediaType: "Image",
       awards: [
         "IQA Award — Excellence in Interior Designing Services — Karnataka",
@@ -87,7 +87,7 @@ export const timelineData: TimelineData = {
       category: "IQA",
       stats: "Award: IQA • Region: Karnataka • Also: Nispana",
       description: "Eleven years of work earns the studio its first major regional honour. A Nispana Innovative Award for sustainable smart-cities work lands in the same year.",
-      image: "/goghwiththeflow/images/rubenius/untitled3.webp",
+      image: "/images/rubenius/untitled3.webp",
       mediaType: "Image",
       awards: [
         "IQA Award — Excellence in Interior Designing Services — Karnataka",
@@ -101,7 +101,7 @@ export const timelineData: TimelineData = {
       category: "IQA",
       stats: "Award: IQA • Region: Karnataka • Also: Nispana",
       description: "Eleven years of work earns the studio its first major regional honour. A Nispana Innovative Award for sustainable smart-cities work lands in the same year.",
-      image: "/goghwiththeflow/images/rubenius/kewaunee.avif",
+      image: "/images/rubenius/kewaunee.avif",
       mediaType: "Image",
       awards: [
         "IQA Award — Excellence in Interior Designing Services — Karnataka",
@@ -115,7 +115,7 @@ export const timelineData: TimelineData = {
       category: "IQA",
       stats: "Award: IQA • Region: Karnataka • Also: Nispana",
       description: "Eleven years of work earns the studio its first major regional honour. A Nispana Innovative Award for sustainable smart-cities work lands in the same year.",
-      image: "/goghwiththeflow/images/rubenius/redsShift21.png",
+      image: "/images/rubenius/redsShift21.png",
       mediaType: "Image",
       awards: [
         "IQA Award — Excellence in Interior Designing Services — Karnataka",
@@ -130,7 +130,7 @@ export const timelineData: TimelineData = {
       category: "FOAID",
       stats: "FOAID: Best Villa • Recognition: ET Top 5 • Theme: Smart Green",
       description: "The studio's first national FOAID win lands for a large villa interior. The Economic Times also recognises Rubenius among India's Top 5 Smart Green Workplaces.",
-      image: "/goghwiththeflow/images/rubenius/scaler.jpg",
+      image: "/images/rubenius/scaler.jpg",
       mediaType: "Image",
       awards: [
         "FOAID Awards — Best Residential Villa Large",
@@ -144,7 +144,7 @@ export const timelineData: TimelineData = {
       category: "FOAID",
       stats: "FOAID: Best Villa • Recognition: ET Top 5 • Theme: Smart Green",
       description: "The studio's first national FOAID win lands for a large villa interior. The Economic Times also recognises Rubenius among India's Top 5 Smart Green Workplaces.",
-      image: "/goghwiththeflow/images/rubenius/schneider23.jpg",
+      image: "/images/rubenius/schneider23.jpg",
       mediaType: "Image",
       awards: [
         "FOAID Awards — Best Residential Villa Large",
@@ -158,7 +158,7 @@ export const timelineData: TimelineData = {
       category: "FOAID",
       stats: "FOAID: Best Villa • Recognition: ET Top 5 • Theme: Smart Green",
       description: "The studio's first national FOAID win lands for a large villa interior. The Economic Times also recognises Rubenius among India's Top 5 Smart Green Workplaces.",
-      image: "/goghwiththeflow/images/rubenius/redsShift12.png",
+      image: "/images/rubenius/redsShift12.png",
       mediaType: "Image",
       awards: [
         "FOAID Awards — Best Residential Villa Large",
@@ -172,7 +172,7 @@ export const timelineData: TimelineData = {
       category: "FOAID",
       stats: "FOAID: Best Villa • Recognition: ET Top 5 • Theme: Smart Green",
       description: "The studio's first national FOAID win lands for a large villa interior. The Economic Times also recognises Rubenius among India's Top 5 Smart Green Workplaces.",
-      image: "/goghwiththeflow/images/rubenius/untitled3.webp",
+      image: "/images/rubenius/untitled3.webp",
       mediaType: "Image",
       awards: [
         "FOAID Awards — Best Residential Villa Large",
@@ -187,7 +187,7 @@ export const timelineData: TimelineData = {
       category: "Retail",
       stats: "FOAID: Best Retail • Scope: India • Discipline: Retail",
       description: "The studio's first national retail design award. Retail emerges as a strategic discipline within the practice — each store treated as a brand environment, not a fixture programme.",
-      image: "/goghwiththeflow/images/rubenius/kewaunee.avif",
+      image: "/images/rubenius/kewaunee.avif",
       mediaType: "Image",
       awards: ["FOAID Awards — Best Interior Retail — India"]
     },
@@ -198,7 +198,7 @@ export const timelineData: TimelineData = {
       category: "Retail",
       stats: "FOAID: Best Retail • Scope: India • Discipline: Retail",
       description: "The studio's first national retail design award. Retail emerges as a strategic discipline within the practice — each store treated as a brand environment, not a fixture programme.",
-      image: "/goghwiththeflow/images/rubenius/schneiderCard.webp",
+      image: "/images/rubenius/schneiderCard.webp",
       mediaType: "Image",
       awards: ["FOAID Awards — Best Interior Retail — India"]
     },
@@ -209,7 +209,7 @@ export const timelineData: TimelineData = {
       category: "Retail",
       stats: "FOAID: Best Retail • Scope: India • Discipline: Retail",
       description: "The studio's first national retail design award. Retail emerges as a strategic discipline within the practice — each store treated as a brand environment, not a fixture programme.",
-      image: "/goghwiththeflow/images/rubenius/redsShift17.png",
+      image: "/images/rubenius/redsShift17.png",
       mediaType: "Image",
       awards: ["FOAID Awards — Best Interior Retail — India"]
     },
@@ -220,7 +220,7 @@ export const timelineData: TimelineData = {
       category: "Retail",
       stats: "FOAID: Best Retail • Scope: India • Discipline: Retail",
       description: "The studio's first national retail design award. Retail emerges as a strategic discipline within the practice — each store treated as a brand environment, not a fixture programme.",
-      image: "/goghwiththeflow/images/rubenius/schneiderCase.avif",
+      image: "/images/rubenius/schneiderCase.avif",
       mediaType: "Image",
       awards: ["FOAID Awards — Best Interior Retail — India"]
     },
@@ -232,7 +232,7 @@ export const timelineData: TimelineData = {
       category: "Awards",
       stats: "Awards: 4 • Categories: Retail · Commercial • Year: 2019",
       description: "Back-to-back FOAID wins for retail are joined by Young Designer and Creative Minds awards for commercial interiors. The studio's commercial practice gains momentum.",
-      image: "/goghwiththeflow/images/rubenius/schneiderCard.webp",
+      image: "/images/rubenius/schneiderCard.webp",
       mediaType: "Image",
       awards: [
         "FOAID Awards — Best Interior Retail (repeat)",
@@ -248,7 +248,7 @@ export const timelineData: TimelineData = {
       category: "Awards",
       stats: "Awards: 4 • Categories: Retail · Commercial • Year: 2019",
       description: "Back-to-back FOAID wins for retail are joined by Young Designer and Creative Minds awards for commercial interiors. The studio's commercial practice gains momentum.",
-      image: "/goghwiththeflow/images/rubenius/kewaunee.avif",
+      image: "/images/rubenius/kewaunee.avif",
       mediaType: "Image",
       awards: [
         "FOAID Awards — Best Interior Retail (repeat)",
@@ -264,7 +264,7 @@ export const timelineData: TimelineData = {
       category: "Awards",
       stats: "Awards: 4 • Categories: Retail · Commercial • Year: 2019",
       description: "Back-to-back FOAID wins for retail are joined by Young Designer and Creative Minds awards for commercial interiors. The studio's commercial practice gains momentum.",
-      image: "/goghwiththeflow/images/rubenius/redsShift17.png",
+      image: "/images/rubenius/redsShift17.png",
       mediaType: "Image",
       awards: [
         "FOAID Awards — Best Interior Retail (repeat)",
@@ -280,7 +280,7 @@ export const timelineData: TimelineData = {
       category: "Awards",
       stats: "Awards: 4 • Categories: Retail · Commercial • Year: 2019",
       description: "Back-to-back FOAID wins for retail are joined by Young Designer and Creative Minds awards for commercial interiors. The studio's commercial practice gains momentum.",
-      image: "/goghwiththeflow/images/rubenius/redsShift21.png",
+      image: "/images/rubenius/redsShift21.png",
       mediaType: "Image",
       awards: [
         "FOAID Awards — Best Interior Retail (repeat)",
@@ -297,7 +297,7 @@ export const timelineData: TimelineData = {
       category: "D'Source",
       stats: "D'Source: 2 wins • Tech Briefs: 2 wins • Category: Pandemic Product",
       description: "When the built world stops, Rubenius turns to product. IIT Bombay's D'Source recognises two distinct pandemic solutions. Tech Briefs adds two 'Most Popular Innovation' awards.",
-      image: "/goghwiththeflow/images/rubenius/redsShift17.png",
+      image: "/images/rubenius/redsShift17.png",
       mediaType: "Image",
       awards: [
         "D'Source — IIT Bombay — Winner — Product Solution for Pandemic",
@@ -313,7 +313,7 @@ export const timelineData: TimelineData = {
       category: "D'Source",
       stats: "D'Source: 2 wins • Tech Briefs: 2 wins • Category: Pandemic Product",
       description: "When the built world stops, Rubenius turns to product. IIT Bombay's D'Source recognises two distinct pandemic solutions. Tech Briefs adds two 'Most Popular Innovation' awards.",
-      image: "/goghwiththeflow/images/rubenius/redsShift21.png",
+      image: "/images/rubenius/redsShift21.png",
       mediaType: "Image",
       awards: [
         "D'Source — IIT Bombay — Winner — Product Solution for Pandemic",
@@ -329,7 +329,7 @@ export const timelineData: TimelineData = {
       category: "D'Source",
       stats: "D'Source: 2 wins • Tech Briefs: 2 wins • Category: Pandemic Product",
       description: "When the built world stops, Rubenius turns to product. IIT Bombay's D'Source recognises two distinct pandemic solutions. Tech Briefs adds two 'Most Popular Innovation' awards.",
-      image: "/goghwiththeflow/images/rubenius/untitled3.webp",
+      image: "/images/rubenius/untitled3.webp",
       mediaType: "Image",
       awards: [
         "D'Source — IIT Bombay — Winner — Product Solution for Pandemic",
@@ -345,7 +345,7 @@ export const timelineData: TimelineData = {
       category: "D'Source",
       stats: "D'Source: 2 wins • Tech Briefs: 2 wins • Category: Pandemic Product",
       description: "When the built world stops, Rubenius turns to product. IIT Bombay's D'Source recognises two distinct pandemic solutions. Tech Briefs adds two 'Most Popular Innovation' awards.",
-      image: "/goghwiththeflow/images/rubenius/redsShift12.png",
+      image: "/images/rubenius/redsShift12.png",
       mediaType: "Video",
       awards: [
         "D'Source — IIT Bombay — Winner — Product Solution for Pandemic",
@@ -362,7 +362,7 @@ export const timelineData: TimelineData = {
       category: "Lexus",
       stats: "Lexus: 3 wins • Total: 8+ awards • Year: 2021",
       description: "Lexus recognises the studio across Public Utility Design, Design Thinking and Product Design. Kyoorius Design Yatra adds a product win. Eldrock honours residential public space. BSI, Mango and Nestle round out a record year.",
-      image: "/goghwiththeflow/images/rubenius/redsShift21.png",
+      image: "/images/rubenius/redsShift21.png",
       mediaType: "Image",
       awards: [
         "Lexus Design Awards — Public Utility Design",
@@ -382,7 +382,7 @@ export const timelineData: TimelineData = {
       category: "Lexus",
       stats: "Lexus: 3 wins • Total: 8+ awards • Year: 2021",
       description: "Lexus recognises the studio across Public Utility Design, Design Thinking and Product Design. Kyoorius Design Yatra adds a product win. Eldrock honours residential public space. BSI, Mango and Nestle round out a record year.",
-      image: "/goghwiththeflow/images/rubenius/redsShift12.png",
+      image: "/images/rubenius/redsShift12.png",
       mediaType: "Image",
       awards: [
         "Lexus Design Awards — Public Utility Design",
@@ -402,7 +402,7 @@ export const timelineData: TimelineData = {
       category: "Lexus",
       stats: "Lexus: 3 wins • Total: 8+ awards • Year: 2021",
       description: "Lexus recognises the studio across Public Utility Design, Design Thinking and Product Design. Kyoorius Design Yatra adds a product win. Eldrock honours residential public space. BSI, Mango and Nestle round out a record year.",
-      image: "/goghwiththeflow/images/rubenius/untitled3.webp",
+      image: "/images/rubenius/untitled3.webp",
       mediaType: "Image",
       awards: [
         "Lexus Design Awards — Public Utility Design",
@@ -422,7 +422,7 @@ export const timelineData: TimelineData = {
       category: "Lexus",
       stats: "Lexus: 3 wins • Total: 8+ awards • Year: 2021",
       description: "Lexus recognises the studio across Public Utility Design, Design Thinking and Product Design. Kyoorius Design Yatra adds a product win. Eldrock honours residential public space. BSI, Mango and Nestle round out a record year.",
-      image: "/goghwiththeflow/images/rubenius/scaler.jpg",
+      image: "/images/rubenius/scaler.jpg",
       mediaType: "Image",
       awards: [
         "Lexus Design Awards — Public Utility Design",
@@ -443,7 +443,7 @@ export const timelineData: TimelineData = {
       category: "Workspace",
       stats: "Spaciux: Platinum • Schneider: 3,000 sqft • Format: AI · IoT",
       description: "A 3,000-sqft Schneider Electric Experience Centre showcases voice-activated AI, parametric audio and IoT — winning FOAID's Innovative Experience Centre of the Year. Spaciux Platinum, Young Designer of the Year and A.C.E.D. recognitions follow.",
-      image: "/goghwiththeflow/images/rubenius/schneiderCase.avif",
+      image: "/images/rubenius/schneiderCase.avif",
       mediaType: "Video",
       awards: [
         "Spaciux Platinum Awards — Large Work Space Design",
@@ -460,7 +460,7 @@ export const timelineData: TimelineData = {
       category: "Workspace",
       stats: "Spaciux: Platinum • Schneider: 3,000 sqft • Format: AI · IoT",
       description: "A 3,000-sqft Schneider Electric Experience Centre showcases voice-activated AI, parametric audio and IoT — winning FOAID's Innovative Experience Centre of the Year. Spaciux Platinum, Young Designer of the Year and A.C.E.D. recognitions follow.",
-      image: "/goghwiththeflow/images/rubenius/schneider9.jpg",
+      image: "/images/rubenius/schneider9.jpg",
       mediaType: "Image",
       awards: [
         "Spaciux Platinum Awards — Large Work Space Design",
@@ -477,7 +477,7 @@ export const timelineData: TimelineData = {
       category: "Workspace",
       stats: "Spaciux: Platinum • Schneider: 3,000 sqft • Format: AI · IoT",
       description: "A 3,000-sqft Schneider Electric Experience Centre showcases voice-activated AI, parametric audio and IoT — winning FOAID's Innovative Experience Centre of the Year. Spaciux Platinum, Young Designer of the Year and A.C.E.D. recognitions follow.",
-      image: "/goghwiththeflow/images/rubenius/schneider8.webp",
+      image: "/images/rubenius/schneider8.webp",
       mediaType: "Image",
       awards: [
         "Spaciux Platinum Awards — Large Work Space Design",
@@ -494,7 +494,7 @@ export const timelineData: TimelineData = {
       category: "Workspace",
       stats: "Spaciux: Platinum • Schneider: 3,000 sqft • Format: AI · IoT",
       description: "A 3,000-sqft Schneider Electric Experience Centre showcases voice-activated AI, parametric audio and IoT — winning FOAID's Innovative Experience Centre of the Year. Spaciux Platinum, Young Designer of the Year and A.C.E.D. recognitions follow.",
-      image: "/goghwiththeflow/images/rubenius/schneider14.avif",
+      image: "/images/rubenius/schneider14.avif",
       mediaType: "Image",
       awards: [
         "Spaciux Platinum Awards — Large Work Space Design",
@@ -512,7 +512,7 @@ export const timelineData: TimelineData = {
       category: "Industry",
       stats: "IGEN: Top 40 • FOAID: India 10 • Industry: Contractor of the Year",
       description: "Construction Week names Rubenius Interior Contractor of the Year. Architect & Interiors India recognises the studio for Future Design. FOAID's India 10 names it among the country's top retail interior practices.",
-      image: "/goghwiththeflow/images/rubenius/scaler.jpg",
+      image: "/images/rubenius/scaler.jpg",
       mediaType: "Image",
       awards: [
         "IGEN — India's Top 40 Best Designer",
@@ -529,7 +529,7 @@ export const timelineData: TimelineData = {
       category: "Industry",
       stats: "IGEN: Top 40 • FOAID: India 10 • Industry: Contractor of the Year",
       description: "Construction Week names Rubenius Interior Contractor of the Year. Architect & Interiors India recognises the studio for Future Design. FOAID's India 10 names it among the country's top retail interior practices.",
-      image: "/goghwiththeflow/images/rubenius/kewaunee.avif",
+      image: "/images/rubenius/kewaunee.avif",
       mediaType: "Image",
       awards: [
         "IGEN — India's Top 40 Best Designer",
@@ -546,7 +546,7 @@ export const timelineData: TimelineData = {
       category: "Industry",
       stats: "IGEN: Top 40 • FOAID: India 10 • Industry: Contractor of the Year",
       description: "Construction Week names Rubenius Interior Contractor of the Year. Architect & Interiors India recognises the studio for Future Design. FOAID's India 10 names it among the country's top retail interior practices.",
-      image: "/goghwiththeflow/images/rubenius/schneider7.webp",
+      image: "/images/rubenius/schneider7.webp",
       mediaType: "Image",
       awards: [
         "IGEN — India's Top 40 Best Designer",
@@ -563,7 +563,7 @@ export const timelineData: TimelineData = {
       category: "Industry",
       stats: "IGEN: Top 40 • FOAID: India 10 • Industry: Contractor of the Year",
       description: "Construction Week names Rubenius Interior Contractor of the Year. Architect & Interiors India recognises the studio for Future Design. FOAID's India 10 names it among the country's top retail interior practices.",
-      image: "/goghwiththeflow/images/rubenius/schneider13.webp",
+      image: "/images/rubenius/schneider13.webp",
       mediaType: "Image",
       awards: [
         "IGEN — India's Top 40 Best Designer",
@@ -581,7 +581,7 @@ export const timelineData: TimelineData = {
       category: "Innovation",
       stats: "Awards: 3 • Milestone: Tech Integration • Format: Spaceiux · FOAID",
       description: "The studio's interactive and immersive practice — combining hardware, software and physical space — earns a Design Milestone Award. Spaceiux recognises shopping-space design and FOAID adds a Bronze.",
-      image: "/goghwiththeflow/images/rubenius/schneider10.avif",
+      image: "/images/rubenius/schneider10.avif",
       mediaType: "Image",
       awards: [
         "Design Milestone Award — Innovative Technology Integration",
@@ -596,7 +596,7 @@ export const timelineData: TimelineData = {
       category: "Innovation",
       stats: "Awards: 3 • Milestone: Tech Integration • Format: Spaceiux · FOAID",
       description: "The studio's interactive and immersive practice — combining hardware, software and physical space — earns a Design Milestone Award. Spaceiux recognises shopping-space design and FOAID adds a Bronze.",
-      image: "/goghwiththeflow/images/rubenius/schneider14.avif",
+      image: "/images/rubenius/schneider14.avif",
       mediaType: "Image",
       awards: [
         "Design Milestone Award — Innovative Technology Integration",
@@ -611,7 +611,7 @@ export const timelineData: TimelineData = {
       category: "Innovation",
       stats: "Awards: 3 • Milestone: Tech Integration • Format: Spaceiux · FOAID",
       description: "The studio's interactive and immersive practice — combining hardware, software and physical space — earns a Design Milestone Award. Spaceiux recognises shopping-space design and FOAID adds a Bronze.",
-      image: "/goghwiththeflow/images/rubenius/schneider23.jpg",
+      image: "/images/rubenius/schneider23.jpg",
       mediaType: "Video",
       awards: [
         "Design Milestone Award — Innovative Technology Integration",
@@ -626,7 +626,7 @@ export const timelineData: TimelineData = {
       category: "Innovation",
       stats: "Awards: 3 • Milestone: Tech Integration • Format: Spaceiux · FOAID",
       description: "The studio's interactive and immersive practice — combining hardware, software and physical space — earns a Design Milestone Award. Spaceiux recognises shopping-space design and FOAID adds a Bronze.",
-      image: "/goghwiththeflow/images/rubenius/schneiderCard.webp",
+      image: "/images/rubenius/schneiderCard.webp",
       mediaType: "Image",
       awards: [
         "Design Milestone Award — Innovative Technology Integration",
@@ -642,7 +642,7 @@ export const timelineData: TimelineData = {
       category: "Current",
       stats: "FOAID: On Going • Year: 2025 • Anniversary: 20 years",
       description: "A project still in motion enters the FOAID circuit. Twenty years on, the practice continues to treat every brief as a chance to shape how a brand is remembered.",
-      image: "/goghwiththeflow/images/rubenius/scaler.jpg",
+      image: "/images/rubenius/scaler.jpg",
       mediaType: "Image",
       awards: ["FOAID — On Going Project"]
     },
@@ -653,7 +653,7 @@ export const timelineData: TimelineData = {
       category: "Current",
       stats: "FOAID: On Going • Year: 2025 • Anniversary: 20 years",
       description: "A project still in motion enters the FOAID circuit. Twenty years on, the practice continues to treat every brief as a chance to shape how a brand is remembered.",
-      image: "/goghwiththeflow/images/rubenius/kewaunee.avif",
+      image: "/images/rubenius/kewaunee.avif",
       mediaType: "Image",
       awards: ["FOAID — On Going Project"]
     },
@@ -664,7 +664,7 @@ export const timelineData: TimelineData = {
       category: "Current",
       stats: "FOAID: On Going • Year: 2025 • Anniversary: 20 years",
       description: "A project still in motion enters the FOAID circuit. Twenty years on, the practice continues to treat every brief as a chance to shape how a brand is remembered.",
-      image: "/goghwiththeflow/images/rubenius/untitled3.webp",
+      image: "/images/rubenius/untitled3.webp",
       mediaType: "Image",
       awards: ["FOAID — On Going Project"]
     },
@@ -675,7 +675,7 @@ export const timelineData: TimelineData = {
       category: "Current",
       stats: "FOAID: On Going • Year: 2025 • Anniversary: 20 years",
       description: "A project still in motion enters the FOAID circuit. Twenty years on, the practice continues to treat every brief as a chance to shape how a brand is remembered.",
-      image: "/goghwiththeflow/images/rubenius/redsShift12.png",
+      image: "/images/rubenius/redsShift12.png",
       mediaType: "Image",
       awards: ["FOAID — On Going Project"]
     }
