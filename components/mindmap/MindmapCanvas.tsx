@@ -6,9 +6,6 @@ import { TimelineItem, GraphNode, GraphLink } from "./types";
 import { timelineData, categoryMeta } from "./data";
 
 interface MindmapCanvasProps {
-  currentSearch: string;
-  activeCategories: Set<string>;
-  activeMediaFilter: string;
   selectedNodeId: string | null;
   setSelectedNodeId: (id: string | null) => void;
   collapsedYears: Set<number>;
@@ -25,6 +22,7 @@ interface Point {
   x: number;
   y: number;
 }
+
 
 function getWidth(node: GraphNode): number {
   if (node.type === "center") return 110;
@@ -145,9 +143,6 @@ function rectCollide() {
 export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
   (
     {
-      currentSearch,
-      activeCategories,
-      activeMediaFilter,
       selectedNodeId,
       setSelectedNodeId,
       collapsedYears,
@@ -192,36 +187,7 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
     const zoomBehaviorRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
     const simulationRef = useRef<d3.Simulation<GraphNode, GraphLink> | null>(null);
 
-    // Helpers to filter item pass status
-    const itemPassesFilters = (item: TimelineItem) => {
-      // Search text match
-      if (currentSearch) {
-        const searchTxt = (
-          item.title +
-          " " +
-          item.description +
-          " " +
-          item.category +
-          " " +
-          item.awards.join(" ")
-        ).toLowerCase();
-        if (!searchTxt.includes(currentSearch.toLowerCase())) {
-          return false;
-        }
-      }
 
-      // Category filter match
-      if (activeCategories.size > 0 && !activeCategories.has(item.category)) {
-        return false;
-      }
-
-      // Media filter match
-      if (activeMediaFilter !== "All" && item.mediaType !== activeMediaFilter) {
-        return false;
-      }
-
-      return true;
-    };
 
     const hasInitialCenteredRef = useRef(false);
 
@@ -500,8 +466,7 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
           // 3. Media nodes under this year
           if (expandedNodes.has(yrId)) {
             timelineData.items.forEach((item) => {
-              const isFilteredIn = itemPassesFilters(item);
-              if (item.year === yr && isFilteredIn) {
+              if (item.year === yr) {
                 const mediaNodeId = `media-${item.id}`;
                 const mNode: GraphNode = {
                   id: mediaNodeId,
@@ -604,32 +569,7 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
 
       const allLinks = linkEnter.merge(linkSelection);
 
-      allLinks.each(function (d: any) {
-        const element = d3.select(this);
-        // Highlight active links when searching
-        const targetId = d.target.id || d.target;
-        if (currentSearch && d.type === "era-media") {
-          const targetNode = nodes.find((n) => n.id === targetId);
-          if (targetNode && targetNode.type === "media" && targetNode.itemData) {
-            const searchTxt = (
-              targetNode.label +
-              " " +
-              targetNode.itemData.description +
-              " " +
-              targetNode.category +
-              " " +
-              targetNode.itemData.awards.join(" ")
-            ).toLowerCase();
-            if (searchTxt.includes(currentSearch.toLowerCase())) {
-              element.classed("active", true);
-              element.classed("faded", false);
-              return;
-            }
-          }
-        }
-        element.classed("active", false);
-        element.classed("faded", false);
-      });
+      allLinks.classed("active", false).classed("faded", false);
 
       // RENDER NODES
       const nodeSelection = mainGroup
@@ -886,24 +826,7 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
 
 
 
-        if (currentSearch && d.type === "media") {
-          const searchTxt = (
-            d.label +
-            " " +
-            d.itemData.description +
-            " " +
-            d.category +
-            " " +
-            d.itemData.awards.join(" ")
-          ).toLowerCase();
-          if (!searchTxt.includes(currentSearch.toLowerCase())) {
-            el.classed("faded", true);
-          } else {
-            el.classed("faded", false);
-          }
-        } else {
-          el.classed("faded", false);
-        }
+        el.classed("faded", false);
       });
 
       // Update expand indicators for years
@@ -916,7 +839,7 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
       simulationRef.current.nodes(nodes);
       (simulationRef.current.force("link") as d3.ForceLink<GraphNode, GraphLink>)?.links(links);
       simulationRef.current.alpha(0.8).restart();
-    }, [currentSearch, activeCategories, activeMediaFilter, collapsedYears, selectedNodeId, expandedNodes]);
+    }, [collapsedYears, selectedNodeId, expandedNodes]);
 
     return (
       <div className="mindmap-container" id="mindmapView" ref={containerRef}>
