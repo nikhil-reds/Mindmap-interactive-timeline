@@ -279,6 +279,12 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
         .scaleExtent([0.15, 3])
         .on("zoom", (event) => {
           mainGroup.attr("transform", event.transform);
+          const k = event.transform.k;
+          d3.selectAll(".node-center circle").attr("transform", `scale(${1 / k})`);
+          d3.selectAll(".node-center text").attr("transform", `scale(${1 / k})`);
+          d3.selectAll(".node-year circle").attr("transform", `scale(${1 / k})`);
+          d3.selectAll(".node-year text").attr("transform", `scale(${1 / k})`);
+          d3.selectAll(".node-year .expand-indicator").attr("transform", `scale(${1 / k})`);
         });
 
       zoomBehaviorRef.current = zoomBehavior;
@@ -368,6 +374,16 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
         });
 
         mainGroup.selectAll<SVGGElement, GraphNode>(".node").attr("transform", (d) => `translate(${d.x},${d.y})`);
+
+        if (svgRef.current) {
+          const transform = d3.zoomTransform(svgRef.current);
+          const k = transform.k;
+          mainGroup.selectAll(".node-center circle").attr("transform", `scale(${1 / k})`);
+          mainGroup.selectAll(".node-center text").attr("transform", `scale(${1 / k})`);
+          mainGroup.selectAll(".node-year circle").attr("transform", `scale(${1 / k})`);
+          mainGroup.selectAll(".node-year text").attr("transform", `scale(${1 / k})`);
+          mainGroup.selectAll(".node-year .expand-indicator").attr("transform", `scale(${1 / k})`);
+        }
       }
 
       return () => {
