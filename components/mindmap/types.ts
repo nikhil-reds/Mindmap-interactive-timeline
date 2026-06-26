@@ -39,6 +39,7 @@ export interface GraphNode extends d3.SimulationNodeDatum {
   originalY?: number;
   fx?: number | null;
   fy?: number | null;
+  isExpanded?: boolean;
 }
 
 export interface GraphLink extends d3.SimulationLinkDatum<GraphNode> {

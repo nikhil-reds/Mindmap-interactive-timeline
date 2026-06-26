@@ -155,7 +155,32 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
     },
     ref
   ) => {
-    const [expandedMediaNodes, setExpandedMediaNodes] = useState<Set<string>>(new Set());
+    const [expandedNodes, setExpandedNodes] = useState<Set<string>>(() => {
+      const initial = new Set<string>(["root"]);
+      const yearKeys = Object.keys(timelineData.eras).map(Number);
+      yearKeys.forEach(yr => {
+        if (!collapsedYears.has(yr)) {
+          initial.add(`year-${yr}`);
+        }
+      });
+      return initial;
+    });
+
+    useEffect(() => {
+      setExpandedNodes(prev => {
+        const next = new Set(prev);
+        const yearKeys = Object.keys(timelineData.eras).map(Number);
+        yearKeys.forEach(yr => {
+          const yrId = `year-${yr}`;
+          if (collapsedYears.has(yr)) {
+            next.delete(yrId);
+          } else {
+            next.add(yrId);
+          }
+        });
+        return next;
+      });
+    }, [collapsedYears]);
     const svgRef = useRef<SVGSVGElement | null>(null);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const zoomBehaviorRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
@@ -404,95 +429,103 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
         label: timelineData.center.title,
         fx: width / 2,
         fy: height / 2,
+        isExpanded: expandedNodes.has("root"),
       };
       nodes.push(centerNode);
 
       // 2. Year nodes
-      const yearKeys = Object.keys(timelineData.eras).map(Number).sort((a, b) => a - b);
-      yearKeys.forEach((yr, idx) => {
-        const angle = (idx / yearKeys.length) * Math.PI * 2;
-        const r = 160;
+      if (expandedNodes.has("root")) {
+        const yearKeys = Object.keys(timelineData.eras).map(Number).sort((a, b) => a - b);
+        yearKeys.forEach((yr, idx) => {
+          const angle = (idx / yearKeys.length) * Math.PI * 2;
+          const r = 160;
+          const yrId = `year-${yr}`;
 
-        const yNode: GraphNode = {
-          id: `year-${yr}`,
-          type: "year",
-          label: String(yr),
-          year: yr,
-          x: width / 2 + Math.cos(angle) * r,
-          y: height / 2 + Math.sin(angle) * r,
-        };
-        nodes.push(yNode);
-
-        links.push({
-          source: "root",
-          target: `year-${yr}`,
-          type: "center-era",
-        });
-      });
-
-      // 3. Item nodes (Media, Text, and Awards nodes)
-      timelineData.items.forEach((item) => {
-        const isFilteredIn = itemPassesFilters(item);
-        const isYearExpanded = !collapsedYears.has(item.year);
-
-        if (isFilteredIn && isYearExpanded) {
-          const mediaNodeId = `media-${item.id}`;
-          const mNode: GraphNode = {
-            id: mediaNodeId,
-            type: "media",
-            label: item.title,
-            category: item.category,
-            year: item.year,
-            itemData: item,
+          const yNode: GraphNode = {
+            id: yrId,
+            type: "year",
+            label: String(yr),
+            year: yr,
+            x: width / 2 + Math.cos(angle) * r,
+            y: height / 2 + Math.sin(angle) * r,
+            isExpanded: expandedNodes.has(yrId),
           };
-          nodes.push(mNode);
+          nodes.push(yNode);
 
           links.push({
-            source: `year-${item.year}`,
-            target: mediaNodeId,
-            type: "era-media",
+            source: "root",
+            target: yrId,
+            type: "center-era",
           });
 
-          // Branching text and awards if the media node is expanded
-          if (expandedMediaNodes.has(item.id)) {
-            const textNodeId = `text-${item.id}`;
-            const tNode: GraphNode = {
-              id: textNodeId,
-              type: "text",
-              label: item.description,
-              category: item.category,
-              year: item.year,
-              itemData: item,
-            };
-            nodes.push(tNode);
+          // 3. Media nodes under this year
+          if (expandedNodes.has(yrId)) {
+            timelineData.items.forEach((item) => {
+              const isFilteredIn = itemPassesFilters(item);
+              if (item.year === yr && isFilteredIn) {
+                const mediaNodeId = `media-${item.id}`;
+                const mNode: GraphNode = {
+                  id: mediaNodeId,
+                  type: "media",
+                  label: item.title,
+                  category: item.category,
+                  year: item.year,
+                  itemData: item,
+                  isExpanded: expandedNodes.has(mediaNodeId),
+                };
+                nodes.push(mNode);
 
-            links.push({
-              source: mediaNodeId,
-              target: textNodeId,
-              type: "media-text",
+                links.push({
+                  source: yrId,
+                  target: mediaNodeId,
+                  type: "era-media",
+                });
+
+                // Text/awards under media
+                if (expandedNodes.has(mediaNodeId)) {
+                  const textNodeId = `text-${item.id}`;
+                  const tNode: GraphNode = {
+                    id: textNodeId,
+                    type: "text",
+                    label: item.description,
+                    category: item.category,
+                    year: item.year,
+                    itemData: item,
+                    isExpanded: false,
+                  };
+                  nodes.push(tNode);
+
+                  links.push({
+                    source: mediaNodeId,
+                    target: textNodeId,
+                    type: "media-text",
+                  });
+
+                  if (item.awards.length > 0) {
+                    const awardsNodeId = `awards-${item.id}`;
+                    const aNode: GraphNode = {
+                      id: awardsNodeId,
+                      type: "awards",
+                      label: item.awards.join(" • "),
+                      category: item.category,
+                      year: item.year,
+                      itemData: item,
+                      isExpanded: false,
+                    };
+                    nodes.push(aNode);
+
+                    links.push({
+                      source: mediaNodeId,
+                      target: awardsNodeId,
+                      type: "media-awards",
+                    });
+                  }
+                }
+              }
             });
-
-            if (item.awards.length > 0) {
-              const awardsNodeId = `awards-${item.id}`;
-              const aNode: GraphNode = {
-                id: awardsNodeId,
-                type: "awards",
-                label: item.awards.join(" • "),
-                category: item.category,
-                year: item.year,
-                itemData: item,
-              };
-              nodes.push(aNode);
-
-              links.push({
-                source: mediaNodeId,
-                target: awardsNodeId,
-                type: "media-awards",
-              });
-            }
           }
-        }
-      });
+        });
+      }
 
       // Drag behavior
       const drag = d3
@@ -572,40 +605,53 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
         .on("click", (event, d) => {
           if (event.defaultPrevented) return;
 
-          if (d.type === "year" && d.year) {
-            const nextCollapsed = new Set(collapsedYears);
-            if (nextCollapsed.has(d.year)) {
-              nextCollapsed.delete(d.year);
-            } else {
+          const nodeId = d.id;
+          const isExpanded = expandedNodes.has(nodeId);
+          const nextExpanded = new Set(expandedNodes);
+
+          if (isExpanded) {
+            nextExpanded.delete(nodeId);
+            const removeDescendants = (id: string) => {
+              if (id === "root") {
+                const yearKeys = Object.keys(timelineData.eras).map(Number);
+                yearKeys.forEach((yr) => {
+                  const yrId = `year-${yr}`;
+                  nextExpanded.delete(yrId);
+                  removeDescendants(yrId);
+                });
+              } else if (id.startsWith("year-")) {
+                const yr = Number(id.replace("year-", ""));
+                timelineData.items.forEach((item) => {
+                  if (item.year === yr) {
+                    const mediaId = `media-${item.id}`;
+                    nextExpanded.delete(mediaId);
+                    removeDescendants(mediaId);
+                  }
+                });
+              } else if (id.startsWith("media-")) {
+                const itemId = id.replace("media-", "");
+                nextExpanded.delete(`text-${itemId}`);
+                nextExpanded.delete(`awards-${itemId}`);
+              }
+            };
+            removeDescendants(nodeId);
+
+            if (d.type === "year" && d.year) {
+              const nextCollapsed = new Set(collapsedYears);
               nextCollapsed.add(d.year);
-              // Clean up expanded media nodes for items in this year
-              const nextExpanded = new Set(expandedMediaNodes);
-              timelineData.items.forEach(item => {
-                if (item.year === d.year) {
-                  nextExpanded.delete(item.id);
-                }
-              });
-              setExpandedMediaNodes(nextExpanded);
+              setCollapsedYears(nextCollapsed);
             }
-            setCollapsedYears(nextCollapsed);
-            setSelectedNodeId(d.id);
+          } else {
+            nextExpanded.add(nodeId);
+            if (d.type === "year" && d.year) {
+              const nextCollapsed = new Set(collapsedYears);
+              nextCollapsed.delete(d.year);
+              setCollapsedYears(nextCollapsed);
+            }
           }
 
-          if (d.type === "media" && d.itemData) {
-            const itemId = d.itemData.id;
-            const nextExpanded = new Set(expandedMediaNodes);
-            if (nextExpanded.has(itemId)) {
-              nextExpanded.delete(itemId);
-            } else {
-              nextExpanded.add(itemId);
-            }
-            setExpandedMediaNodes(nextExpanded);
-            setSelectedNodeId(d.id);
-          } else {
-            if (d.type !== "year") {
-              setSelectedNodeId(d.id);
-            }
-          }
+          setExpandedNodes(nextExpanded);
+          setSelectedNodeId(nodeId);
           event.stopPropagation();
         });
 
@@ -637,6 +683,17 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
             .attr("values", "60;80;60")
             .attr("dur", "4s")
             .attr("repeatCount", "indefinite");
+
+          // Badge
+          group
+            .append("g")
+            .attr("class", "toggle-badge")
+            .attr("transform", "translate(0, 68)")
+            .each(function () {
+              const badge = d3.select(this);
+              badge.append("circle").attr("r", 7).style("fill", "var(--bg-card)").style("stroke", "var(--primary)").style("stroke-width", "1px");
+              badge.append("text").attr("dy", 3).attr("text-anchor", "middle").style("font-size", "9px").style("fill", "var(--primary-light)").text("+");
+            });
         });
 
       // Year node template
@@ -656,6 +713,17 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
             .style("fill", collapsedYears.has(d.year!) ? "var(--primary)" : "#2a9d8f")
             .style("stroke", "var(--bg-base)")
             .style("stroke-width", "1px");
+
+          // Badge
+          group
+            .append("g")
+            .attr("class", "toggle-badge")
+            .attr("transform", "translate(0, 22)")
+            .each(function () {
+              const badge = d3.select(this);
+              badge.append("circle").attr("r", 6).style("fill", "var(--bg-card)").style("stroke", "var(--primary)").style("stroke-width", "1px");
+              badge.append("text").attr("dy", 2.5).attr("text-anchor", "middle").style("font-size", "8px").style("fill", "var(--primary-light)").text("+");
+            });
         });
 
       // Media node template (Image/Video square thumbnail preview)
@@ -709,6 +777,17 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
             .style("font-size", "9px")
             .style("fill", "var(--text-muted)")
             .text(d.label.length > 12 ? d.label.substring(0, 10) + ".." : d.label);
+
+          // Badge
+          group
+            .append("g")
+            .attr("class", "toggle-badge")
+            .attr("transform", "translate(22, -22)")
+            .each(function () {
+              const badge = d3.select(this);
+              badge.append("circle").attr("r", 6).style("fill", "var(--bg-card)").style("stroke", "var(--primary)").style("stroke-width", "1px");
+              badge.append("text").attr("dy", 2.5).attr("text-anchor", "middle").style("font-size", "8px").style("fill", "var(--primary-light)").text("+");
+            });
         });
 
       // Text node template (ForeignObject rectangle containing wrapped HTML text)
@@ -766,6 +845,21 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
         const el = d3.select(this);
         el.classed("selected", d.id === selectedNodeId);
 
+        const isExpanded = expandedNodes.has(d.id);
+        const hasHidden = !isExpanded && (d.type === "center" || d.type === "year" || d.type === "media");
+        el.classed("has-hidden-children", hasHidden);
+
+        // Update badge text, visibility, and styles
+        const badge = el.select(".toggle-badge");
+        if (d.type === "center" || d.type === "year" || d.type === "media") {
+          badge.style("display", "block");
+          badge.select("text").text(isExpanded ? "−" : "+");
+          badge.select("circle").style("stroke", isExpanded ? "#2a9d8f" : "var(--primary)");
+          badge.select("text").style("fill", isExpanded ? "#2a9d8f" : "var(--primary-light)");
+        } else {
+          badge.style("display", "none");
+        }
+
         if (currentSearch && d.type === "media") {
           const searchTxt = (
             d.label +
@@ -795,8 +889,8 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
       // Update force simulation data
       simulationRef.current.nodes(nodes);
       (simulationRef.current.force("link") as d3.ForceLink<GraphNode, GraphLink>)?.links(links);
-      simulationRef.current.alpha(0.6).restart();
-    }, [currentSearch, activeCategories, activeMediaFilter, collapsedYears, selectedNodeId, expandedMediaNodes]);
+      simulationRef.current.alpha(0.8).restart();
+    }, [currentSearch, activeCategories, activeMediaFilter, collapsedYears, selectedNodeId, expandedNodes]);
 
     return (
       <div className="mindmap-container" id="mindmapView" ref={containerRef}>
