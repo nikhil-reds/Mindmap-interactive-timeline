@@ -450,7 +450,24 @@
     stroke: rgba(212, 175, 55, 0.18);
     stroke-width: 1.5px;
     fill: none;
-    transition: stroke 0.3s, stroke-width 0.3s, stroke-dashoffset 0.3s ease, d 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: stroke-dashoffset 0.3s ease, stroke 0.3s, stroke-width 0.3s, opacity 0.3s ease, d 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.node.has-hidden-children circle,
+.node.has-hidden-children rect {
+    stroke: var(--primary) !important;
+    stroke-width: 2.5px !important;
+    filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.85)) !important;
+    animation: pulseGlow 2s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.55));
+    }
+    50% {
+        filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.95));
+    }
 }
 
 .toggle-badge circle {
