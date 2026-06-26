@@ -30,7 +30,7 @@ export const timelineData: TimelineData = {
       description: "The studio begins with a single conviction: space is a business instrument, not decoration. The Interior Wellbeing™ philosophy takes root here and quietly sets the foundation for what becomes the REDS methodology.",
       image: "/goghwiththeflow/images/rubenius/scroll.webp",
       mediaType: "Image",
-      awards: ["🏆 General Milestone"]
+      awards: ["General Milestone"]
     },
     {
       id: "2005-2",
@@ -41,7 +41,7 @@ export const timelineData: TimelineData = {
       description: "The studio begins with a single conviction: space is a business instrument, not decoration. The Interior Wellbeing™ philosophy takes root here and quietly sets the foundation for what becomes the REDS methodology.",
       image: "/goghwiththeflow/images/rubenius/untitled3.webp",
       mediaType: "Image",
-      awards: ["🏆 General Milestone"]
+      awards: ["General Milestone"]
     },
     {
       id: "2005-3",
@@ -52,7 +52,7 @@ export const timelineData: TimelineData = {
       description: "The studio begins with a single conviction: space is a business instrument, not decoration. The Interior Wellbeing™ philosophy takes root here and quietly sets the foundation for what becomes the REDS methodology.",
       image: "/goghwiththeflow/images/rubenius/redsShift12.png",
       mediaType: "Image",
-      awards: ["🏆 General Milestone"]
+      awards: ["General Milestone"]
     },
     {
       id: "2005-4",
@@ -63,7 +63,7 @@ export const timelineData: TimelineData = {
       description: "The studio begins with a single conviction: space is a business instrument, not decoration. The Interior Wellbeing™ philosophy takes root here and quietly sets the foundation for what becomes the REDS methodology.",
       image: "/goghwiththeflow/images/rubenius/redsShift17.png",
       mediaType: "Image",
-      awards: ["🏆 General Milestone"]
+      awards: ["General Milestone"]
     },
     // 2016
     {
@@ -76,8 +76,8 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/scaler.jpg",
       mediaType: "Image",
       awards: [
-        "🏆 IQA Award — Excellence in Interior Designing Services — Karnataka",
-        "🏆 Nispana Innovative — Sustainable Smart Cities Innovations"
+        "IQA Award — Excellence in Interior Designing Services — Karnataka",
+        "Nispana Innovative — Sustainable Smart Cities Innovations"
       ]
     },
     {
@@ -90,8 +90,8 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/untitled3.webp",
       mediaType: "Image",
       awards: [
-        "🏆 IQA Award — Excellence in Interior Designing Services — Karnataka",
-        "🏆 Nispana Innovative — Sustainable Smart Cities Innovations"
+        "IQA Award — Excellence in Interior Designing Services — Karnataka",
+        "Nispana Innovative — Sustainable Smart Cities Innovations"
       ]
     },
     {
@@ -104,8 +104,8 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/kewaunee.avif",
       mediaType: "Image",
       awards: [
-        "🏆 IQA Award — Excellence in Interior Designing Services — Karnataka",
-        "🏆 Nispana Innovative — Sustainable Smart Cities Innovations"
+        "IQA Award — Excellence in Interior Designing Services — Karnataka",
+        "Nispana Innovative — Sustainable Smart Cities Innovations"
       ]
     },
     {
@@ -118,8 +118,8 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/redsShift21.png",
       mediaType: "Image",
       awards: [
-        "🏆 IQA Award — Excellence in Interior Designing Services — Karnataka",
-        "🏆 Nispana Innovative — Sustainable Smart Cities Innovations"
+        "IQA Award — Excellence in Interior Designing Services — Karnataka",
+        "Nispana Innovative — Sustainable Smart Cities Innovations"
       ]
     },
     // 2017
@@ -133,8 +133,8 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/scaler.jpg",
       mediaType: "Image",
       awards: [
-        "🏆 FOAID Awards — Best Residential Villa Large",
-        "🏆 ET Smart Green Summit — Top 5 Smart Green Workplaces"
+        "FOAID Awards — Best Residential Villa Large",
+        "ET Smart Green Summit — Top 5 Smart Green Workplaces"
       ]
     },
     {
@@ -147,8 +147,8 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/schneider23.jpg",
       mediaType: "Image",
       awards: [
-        "🏆 FOAID Awards — Best Residential Villa Large",
-        "🏆 ET Smart Green Summit — Top 5 Smart Green Workplaces"
+        "FOAID Awards — Best Residential Villa Large",
+        "ET Smart Green Summit — Top 5 Smart Green Workplaces"
       ]
     },
     {
@@ -161,8 +161,8 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/redsShift12.png",
       mediaType: "Image",
       awards: [
-        "🏆 FOAID Awards — Best Residential Villa Large",
-        "🏆 ET Smart Green Summit — Top 5 Smart Green Workplaces"
+        "FOAID Awards — Best Residential Villa Large",
+        "ET Smart Green Summit — Top 5 Smart Green Workplaces"
       ]
     },
     {
@@ -175,8 +175,8 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/untitled3.webp",
       mediaType: "Image",
       awards: [
-        "🏆 FOAID Awards — Best Residential Villa Large",
-        "🏆 ET Smart Green Summit — Top 5 Smart Green Workplaces"
+        "FOAID Awards — Best Residential Villa Large",
+        "ET Smart Green Summit — Top 5 Smart Green Workplaces"
       ]
     },
     // 2018
@@ -189,7 +189,7 @@ export const timelineData: TimelineData = {
       description: "The studio's first national retail design award. Retail emerges as a strategic discipline within the practice — each store treated as a brand environment, not a fixture programme.",
       image: "/goghwiththeflow/images/rubenius/kewaunee.avif",
       mediaType: "Image",
-      awards: ["🏆 FOAID Awards — Best Interior Retail — India"]
+      awards: ["FOAID Awards — Best Interior Retail — India"]
     },
     {
       id: "2018-2",
@@ -200,7 +200,7 @@ export const timelineData: TimelineData = {
       description: "The studio's first national retail design award. Retail emerges as a strategic discipline within the practice — each store treated as a brand environment, not a fixture programme.",
       image: "/goghwiththeflow/images/rubenius/schneiderCard.webp",
       mediaType: "Image",
-      awards: ["🏆 FOAID Awards — Best Interior Retail — India"]
+      awards: ["FOAID Awards — Best Interior Retail — India"]
     },
     {
       id: "2018-3",
@@ -211,7 +211,7 @@ export const timelineData: TimelineData = {
       description: "The studio's first national retail design award. Retail emerges as a strategic discipline within the practice — each store treated as a brand environment, not a fixture programme.",
       image: "/goghwiththeflow/images/rubenius/redsShift17.png",
       mediaType: "Image",
-      awards: ["🏆 FOAID Awards — Best Interior Retail — India"]
+      awards: ["FOAID Awards — Best Interior Retail — India"]
     },
     {
       id: "2018-4",
@@ -222,7 +222,7 @@ export const timelineData: TimelineData = {
       description: "The studio's first national retail design award. Retail emerges as a strategic discipline within the practice — each store treated as a brand environment, not a fixture programme.",
       image: "/goghwiththeflow/images/rubenius/schneiderCase.avif",
       mediaType: "Image",
-      awards: ["🏆 FOAID Awards — Best Interior Retail — India"]
+      awards: ["FOAID Awards — Best Interior Retail — India"]
     },
     // 2019
     {
@@ -235,10 +235,10 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/schneiderCard.webp",
       mediaType: "Image",
       awards: [
-        "🏆 FOAID Awards — Best Interior Retail (repeat)",
-        "🏆 SCCI Awards — Innovation Hub",
-        "🏆 IA&B Young Designer — Best Commercial Interiors",
-        "🏆 Creative Minds Next — Best Interiors Commercial"
+        "FOAID Awards — Best Interior Retail (repeat)",
+        "SCCI Awards — Innovation Hub",
+        "IA&B Young Designer — Best Commercial Interiors",
+        "Creative Minds Next — Best Interiors Commercial"
       ]
     },
     {
@@ -251,10 +251,10 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/kewaunee.avif",
       mediaType: "Image",
       awards: [
-        "🏆 FOAID Awards — Best Interior Retail (repeat)",
-        "🏆 SCCI Awards — Innovation Hub",
-        "🏆 IA&B Young Designer — Best Commercial Interiors",
-        "🏆 Creative Minds Next — Best Interiors Commercial"
+        "FOAID Awards — Best Interior Retail (repeat)",
+        "SCCI Awards — Innovation Hub",
+        "IA&B Young Designer — Best Commercial Interiors",
+        "Creative Minds Next — Best Interiors Commercial"
       ]
     },
     {
@@ -267,10 +267,10 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/redsShift17.png",
       mediaType: "Image",
       awards: [
-        "🏆 FOAID Awards — Best Interior Retail (repeat)",
-        "🏆 SCCI Awards — Innovation Hub",
-        "🏆 IA&B Young Designer — Best Commercial Interiors",
-        "🏆 Creative Minds Next — Best Interiors Commercial"
+        "FOAID Awards — Best Interior Retail (repeat)",
+        "SCCI Awards — Innovation Hub",
+        "IA&B Young Designer — Best Commercial Interiors",
+        "Creative Minds Next — Best Interiors Commercial"
       ]
     },
     {
@@ -283,10 +283,10 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/redsShift21.png",
       mediaType: "Image",
       awards: [
-        "🏆 FOAID Awards — Best Interior Retail (repeat)",
-        "🏆 SCCI Awards — Innovation Hub",
-        "🏆 IA&B Young Designer — Best Commercial Interiors",
-        "🏆 Creative Minds Next — Best Interiors Commercial"
+        "FOAID Awards — Best Interior Retail (repeat)",
+        "SCCI Awards — Innovation Hub",
+        "IA&B Young Designer — Best Commercial Interiors",
+        "Creative Minds Next — Best Interiors Commercial"
       ]
     },
     // 2020
@@ -300,10 +300,10 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/redsShift17.png",
       mediaType: "Image",
       awards: [
-        "🏆 D'Source — IIT Bombay — Winner — Product Solution for Pandemic",
-        "🏆 D'Source — IIT Bombay — Winner — Isolation Solution for Pandemic",
-        "🏆 Tech Briefs — Create the Future — Most Popular Innovation — Medical",
-        "🏆 Tech Briefs — Create the Future — Most Popular Innovation — Product Design"
+        "D'Source — IIT Bombay — Winner — Product Solution for Pandemic",
+        "D'Source — IIT Bombay — Winner — Isolation Solution for Pandemic",
+        "Tech Briefs — Create the Future — Most Popular Innovation — Medical",
+        "Tech Briefs — Create the Future — Most Popular Innovation — Product Design"
       ]
     },
     {
@@ -316,10 +316,10 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/redsShift21.png",
       mediaType: "Image",
       awards: [
-        "🏆 D'Source — IIT Bombay — Winner — Product Solution for Pandemic",
-        "🏆 D'Source — IIT Bombay — Winner — Isolation Solution for Pandemic",
-        "🏆 Tech Briefs — Create the Future — Most Popular Innovation — Medical",
-        "🏆 Tech Briefs — Create the Future — Most Popular Innovation — Product Design"
+        "D'Source — IIT Bombay — Winner — Product Solution for Pandemic",
+        "D'Source — IIT Bombay — Winner — Isolation Solution for Pandemic",
+        "Tech Briefs — Create the Future — Most Popular Innovation — Medical",
+        "Tech Briefs — Create the Future — Most Popular Innovation — Product Design"
       ]
     },
     {
@@ -332,10 +332,10 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/untitled3.webp",
       mediaType: "Image",
       awards: [
-        "🏆 D'Source — IIT Bombay — Winner — Product Solution for Pandemic",
-        "🏆 D'Source — IIT Bombay — Winner — Isolation Solution for Pandemic",
-        "🏆 Tech Briefs — Create the Future — Most Popular Innovation — Medical",
-        "🏆 Tech Briefs — Create the Future — Most Popular Innovation — Product Design"
+        "D'Source — IIT Bombay — Winner — Product Solution for Pandemic",
+        "D'Source — IIT Bombay — Winner — Isolation Solution for Pandemic",
+        "Tech Briefs — Create the Future — Most Popular Innovation — Medical",
+        "Tech Briefs — Create the Future — Most Popular Innovation — Product Design"
       ]
     },
     {
@@ -348,10 +348,10 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/redsShift12.png",
       mediaType: "Video",
       awards: [
-        "🏆 D'Source — IIT Bombay — Winner — Product Solution for Pandemic",
-        "🏆 D'Source — IIT Bombay — Winner — Isolation Solution for Pandemic",
-        "🏆 Tech Briefs — Create the Future — Most Popular Innovation — Medical",
-        "🏆 Tech Briefs — Create the Future — Most Popular Innovation — Product Design"
+        "D'Source — IIT Bombay — Winner — Product Solution for Pandemic",
+        "D'Source — IIT Bombay — Winner — Isolation Solution for Pandemic",
+        "Tech Briefs — Create the Future — Most Popular Innovation — Medical",
+        "Tech Briefs — Create the Future — Most Popular Innovation — Product Design"
       ]
     },
     // 2021
@@ -365,14 +365,14 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/redsShift21.png",
       mediaType: "Image",
       awards: [
-        "🏆 Lexus Design Awards — Public Utility Design",
-        "🏆 Lexus Design Awards — Design Thinking",
-        "🏆 Lexus Design Awards — Product Design",
-        "🏆 Kyoorius Design Yatra — Product Design",
-        "🏆 Eldrock Award — Best in Class — Residential & Public Space",
-        "🏆 BSI Awards — Winner — Prefab Structure",
-        "🏆 Mango Award — Reinventing Tents",
-        "🏆 Nestle India Award — Recognition — COVID Innovations"
+        "Lexus Design Awards — Public Utility Design",
+        "Lexus Design Awards — Design Thinking",
+        "Lexus Design Awards — Product Design",
+        "Kyoorius Design Yatra — Product Design",
+        "Eldrock Award — Best in Class — Residential & Public Space",
+        "BSI Awards — Winner — Prefab Structure",
+        "Mango Award — Reinventing Tents",
+        "Nestle India Award — Recognition — COVID Innovations"
       ]
     },
     {
@@ -385,14 +385,14 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/redsShift12.png",
       mediaType: "Image",
       awards: [
-        "🏆 Lexus Design Awards — Public Utility Design",
-        "🏆 Lexus Design Awards — Design Thinking",
-        "🏆 Lexus Design Awards — Product Design",
-        "🏆 Kyoorius Design Yatra — Product Design",
-        "🏆 Eldrock Award — Best in Class — Residential & Public Space",
-        "🏆 BSI Awards — Winner — Prefab Structure",
-        "🏆 Mango Award — Reinventing Tents",
-        "🏆 Nestle India Award — Recognition — COVID Innovations"
+        "Lexus Design Awards — Public Utility Design",
+        "Lexus Design Awards — Design Thinking",
+        "Lexus Design Awards — Product Design",
+        "Kyoorius Design Yatra — Product Design",
+        "Eldrock Award — Best in Class — Residential & Public Space",
+        "BSI Awards — Winner — Prefab Structure",
+        "Mango Award — Reinventing Tents",
+        "Nestle India Award — Recognition — COVID Innovations"
       ]
     },
     {
@@ -405,14 +405,14 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/untitled3.webp",
       mediaType: "Image",
       awards: [
-        "🏆 Lexus Design Awards — Public Utility Design",
-        "🏆 Lexus Design Awards — Design Thinking",
-        "🏆 Lexus Design Awards — Product Design",
-        "🏆 Kyoorius Design Yatra — Product Design",
-        "🏆 Eldrock Award — Best in Class — Residential & Public Space",
-        "🏆 BSI Awards — Winner — Prefab Structure",
-        "🏆 Mango Award — Reinventing Tents",
-        "🏆 Nestle India Award — Recognition — COVID Innovations"
+        "Lexus Design Awards — Public Utility Design",
+        "Lexus Design Awards — Design Thinking",
+        "Lexus Design Awards — Product Design",
+        "Kyoorius Design Yatra — Product Design",
+        "Eldrock Award — Best in Class — Residential & Public Space",
+        "BSI Awards — Winner — Prefab Structure",
+        "Mango Award — Reinventing Tents",
+        "Nestle India Award — Recognition — COVID Innovations"
       ]
     },
     {
@@ -425,14 +425,14 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/scaler.jpg",
       mediaType: "Image",
       awards: [
-        "🏆 Lexus Design Awards — Public Utility Design",
-        "🏆 Lexus Design Awards — Design Thinking",
-        "🏆 Lexus Design Awards — Product Design",
-        "🏆 Kyoorius Design Yatra — Product Design",
-        "🏆 Eldrock Award — Best in Class — Residential & Public Space",
-        "🏆 BSI Awards — Winner — Prefab Structure",
-        "🏆 Mango Award — Reinventing Tents",
-        "🏆 Nestle India Award — Recognition — COVID Innovations"
+        "Lexus Design Awards — Public Utility Design",
+        "Lexus Design Awards — Design Thinking",
+        "Lexus Design Awards — Product Design",
+        "Kyoorius Design Yatra — Product Design",
+        "Eldrock Award — Best in Class — Residential & Public Space",
+        "BSI Awards — Winner — Prefab Structure",
+        "Mango Award — Reinventing Tents",
+        "Nestle India Award — Recognition — COVID Innovations"
       ]
     },
     // 2022
@@ -446,11 +446,11 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/schneiderCase.avif",
       mediaType: "Video",
       awards: [
-        "🏆 Spaciux Platinum Awards — Large Work Space Design",
-        "🏆 Young Designer of the Year — Commercial Design",
-        "🏆 Innovation at the Workspace — Commercial Design",
-        "🏆 A.C.E.D. — Best Colour Palette — Commercial",
-        "🏆 Lexus Design Award — Finalist — Design Thinking"
+        "Spaciux Platinum Awards — Large Work Space Design",
+        "Young Designer of the Year — Commercial Design",
+        "Innovation at the Workspace — Commercial Design",
+        "A.C.E.D. — Best Colour Palette — Commercial",
+        "Lexus Design Award — Finalist — Design Thinking"
       ]
     },
     {
@@ -463,11 +463,11 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/schneider9.jpg",
       mediaType: "Image",
       awards: [
-        "🏆 Spaciux Platinum Awards — Large Work Space Design",
-        "🏆 Young Designer of the Year — Commercial Design",
-        "🏆 Innovation at the Workspace — Commercial Design",
-        "🏆 A.C.E.D. — Best Colour Palette — Commercial",
-        "🏆 Lexus Design Award — Finalist — Design Thinking"
+        "Spaciux Platinum Awards — Large Work Space Design",
+        "Young Designer of the Year — Commercial Design",
+        "Innovation at the Workspace — Commercial Design",
+        "A.C.E.D. — Best Colour Palette — Commercial",
+        "Lexus Design Award — Finalist — Design Thinking"
       ]
     },
     {
@@ -480,11 +480,11 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/schneider8.webp",
       mediaType: "Image",
       awards: [
-        "🏆 Spaciux Platinum Awards — Large Work Space Design",
-        "🏆 Young Designer of the Year — Commercial Design",
-        "🏆 Innovation at the Workspace — Commercial Design",
-        "🏆 A.C.E.D. — Best Colour Palette — Commercial",
-        "🏆 Lexus Design Award — Finalist — Design Thinking"
+        "Spaciux Platinum Awards — Large Work Space Design",
+        "Young Designer of the Year — Commercial Design",
+        "Innovation at the Workspace — Commercial Design",
+        "A.C.E.D. — Best Colour Palette — Commercial",
+        "Lexus Design Award — Finalist — Design Thinking"
       ]
     },
     {
@@ -497,11 +497,11 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/schneider14.avif",
       mediaType: "Image",
       awards: [
-        "🏆 Spaciux Platinum Awards — Large Work Space Design",
-        "🏆 Young Designer of the Year — Commercial Design",
-        "🏆 Innovation at the Workspace — Commercial Design",
-        "🏆 A.C.E.D. — Best Colour Palette — Commercial",
-        "🏆 Lexus Design Award — Finalist — Design Thinking"
+        "Spaciux Platinum Awards — Large Work Space Design",
+        "Young Designer of the Year — Commercial Design",
+        "Innovation at the Workspace — Commercial Design",
+        "A.C.E.D. — Best Colour Palette — Commercial",
+        "Lexus Design Award — Finalist — Design Thinking"
       ]
     },
     // 2023
@@ -515,11 +515,11 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/scaler.jpg",
       mediaType: "Image",
       awards: [
-        "🏆 IGEN — India's Top 40 Best Designer",
-        "🏆 FOAID India 10 — Interior Retail",
-        "🏆 Construction Week — Interior Contractor of the Year",
-        "🏆 Architect & Interiors India — Future Design",
-        "🏆 Geevees — Commercial Design"
+        "IGEN — India's Top 40 Best Designer",
+        "FOAID India 10 — Interior Retail",
+        "Construction Week — Interior Contractor of the Year",
+        "Architect & Interiors India — Future Design",
+        "Geevees — Commercial Design"
       ]
     },
     {
@@ -532,11 +532,11 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/kewaunee.avif",
       mediaType: "Image",
       awards: [
-        "🏆 IGEN — India's Top 40 Best Designer",
-        "🏆 FOAID India 10 — Interior Retail",
-        "🏆 Construction Week — Interior Contractor of the Year",
-        "🏆 Architect & Interiors India — Future Design",
-        "🏆 Geevees — Commercial Design"
+        "IGEN — India's Top 40 Best Designer",
+        "FOAID India 10 — Interior Retail",
+        "Construction Week — Interior Contractor of the Year",
+        "Architect & Interiors India — Future Design",
+        "Geevees — Commercial Design"
       ]
     },
     {
@@ -549,11 +549,11 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/schneider7.webp",
       mediaType: "Image",
       awards: [
-        "🏆 IGEN — India's Top 40 Best Designer",
-        "🏆 FOAID India 10 — Interior Retail",
-        "🏆 Construction Week — Interior Contractor of the Year",
-        "🏆 Architect & Interiors India — Future Design",
-        "🏆 Geevees — Commercial Design"
+        "IGEN — India's Top 40 Best Designer",
+        "FOAID India 10 — Interior Retail",
+        "Construction Week — Interior Contractor of the Year",
+        "Architect & Interiors India — Future Design",
+        "Geevees — Commercial Design"
       ]
     },
     {
@@ -566,11 +566,11 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/schneider13.webp",
       mediaType: "Image",
       awards: [
-        "🏆 IGEN — India's Top 40 Best Designer",
-        "🏆 FOAID India 10 — Interior Retail",
-        "🏆 Construction Week — Interior Contractor of the Year",
-        "🏆 Architect & Interiors India — Future Design",
-        "🏆 Geevees — Commercial Design"
+        "IGEN — India's Top 40 Best Designer",
+        "FOAID India 10 — Interior Retail",
+        "Construction Week — Interior Contractor of the Year",
+        "Architect & Interiors India — Future Design",
+        "Geevees — Commercial Design"
       ]
     },
     // 2024
@@ -584,9 +584,9 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/schneider10.avif",
       mediaType: "Image",
       awards: [
-        "🏆 Design Milestone Award — Innovative Technology Integration",
-        "🏆 Spaceiux — Shopping Space",
-        "🏆 FOAID — Bronze"
+        "Design Milestone Award — Innovative Technology Integration",
+        "Spaceiux — Shopping Space",
+        "FOAID — Bronze"
       ]
     },
     {
@@ -599,9 +599,9 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/schneider14.avif",
       mediaType: "Image",
       awards: [
-        "🏆 Design Milestone Award — Innovative Technology Integration",
-        "🏆 Spaceiux — Shopping Space",
-        "🏆 FOAID — Bronze"
+        "Design Milestone Award — Innovative Technology Integration",
+        "Spaceiux — Shopping Space",
+        "FOAID — Bronze"
       ]
     },
     {
@@ -614,9 +614,9 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/schneider23.jpg",
       mediaType: "Video",
       awards: [
-        "🏆 Design Milestone Award — Innovative Technology Integration",
-        "🏆 Spaceiux — Shopping Space",
-        "🏆 FOAID — Bronze"
+        "Design Milestone Award — Innovative Technology Integration",
+        "Spaceiux — Shopping Space",
+        "FOAID — Bronze"
       ]
     },
     {
@@ -629,9 +629,9 @@ export const timelineData: TimelineData = {
       image: "/goghwiththeflow/images/rubenius/schneiderCard.webp",
       mediaType: "Image",
       awards: [
-        "🏆 Design Milestone Award — Innovative Technology Integration",
-        "🏆 Spaceiux — Shopping Space",
-        "🏆 FOAID — Bronze"
+        "Design Milestone Award — Innovative Technology Integration",
+        "Spaceiux — Shopping Space",
+        "FOAID — Bronze"
       ]
     },
     // 2025
@@ -644,7 +644,7 @@ export const timelineData: TimelineData = {
       description: "A project still in motion enters the FOAID circuit. Twenty years on, the practice continues to treat every brief as a chance to shape how a brand is remembered.",
       image: "/goghwiththeflow/images/rubenius/scaler.jpg",
       mediaType: "Image",
-      awards: ["🏆 FOAID — On Going Project"]
+      awards: ["FOAID — On Going Project"]
     },
     {
       id: "2025-2",
@@ -655,7 +655,7 @@ export const timelineData: TimelineData = {
       description: "A project still in motion enters the FOAID circuit. Twenty years on, the practice continues to treat every brief as a chance to shape how a brand is remembered.",
       image: "/goghwiththeflow/images/rubenius/kewaunee.avif",
       mediaType: "Image",
-      awards: ["🏆 FOAID — On Going Project"]
+      awards: ["FOAID — On Going Project"]
     },
     {
       id: "2025-3",
@@ -666,7 +666,7 @@ export const timelineData: TimelineData = {
       description: "A project still in motion enters the FOAID circuit. Twenty years on, the practice continues to treat every brief as a chance to shape how a brand is remembered.",
       image: "/goghwiththeflow/images/rubenius/untitled3.webp",
       mediaType: "Image",
-      awards: ["🏆 FOAID — On Going Project"]
+      awards: ["FOAID — On Going Project"]
     },
     {
       id: "2025-4",
@@ -677,7 +677,7 @@ export const timelineData: TimelineData = {
       description: "A project still in motion enters the FOAID circuit. Twenty years on, the practice continues to treat every brief as a chance to shape how a brand is remembered.",
       image: "/goghwiththeflow/images/rubenius/redsShift12.png",
       mediaType: "Image",
-      awards: ["🏆 FOAID — On Going Project"]
+      awards: ["FOAID — On Going Project"]
     }
   ]
 };
