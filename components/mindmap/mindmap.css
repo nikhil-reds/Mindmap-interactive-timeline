@@ -451,6 +451,7 @@
     stroke-width: 1.5px;
     fill: none;
     transition: stroke-dashoffset 0.3s ease, stroke 0.3s, stroke-width 0.3s, opacity 0.3s ease, d 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    vector-effect: non-scaling-stroke;
 }
 
 .node.has-hidden-children circle,
@@ -557,7 +558,7 @@
     font-size: 13px;
     font-weight: 600;
     letter-spacing: 1px;
-    fill: var(--primary-light);
+    fill: #ffffff;
     text-anchor: middle;
     pointer-events: none;
 }
@@ -578,7 +579,7 @@
 .node-year text {
     font-size: 11px;
     font-weight: 700;
-    fill: var(--text-main);
+    fill: #ffffff;
     text-anchor: middle;
     pointer-events: none;
 }
@@ -1132,4 +1133,19 @@
 /* SVG FILTERS FOR GLOW EFFECTS */
 svg defs {
     pointer-events: none;
+}
+
+/* Force solid white text on all mind-map nodes and details cards */
+.node text,
+.node-media text {
+    fill: #ffffff !important;
+}
+
+.canvas-text-card,
+.canvas-text-card div,
+.canvas-text-card span,
+.canvas-text-card p,
+.canvas-award-card,
+.canvas-award-card span {
+    color: #ffffff !important;
 }
