@@ -16,6 +16,7 @@ import { timelineData, categoryMeta } from "./data";
 export const MIN_ZOOM = 0.35;
 export const MAX_ZOOM = 2;
 export const DEFAULT_ZOOM = 0.85;
+const MESH_PADDING = 44;
 
 interface MindmapCanvasProps {
   selectedNodeId: string | null;
@@ -107,54 +108,53 @@ function segmentCrossesRect(from: Point, to: Point, rect: NodeRect) {
   return false;
 }
 
-function getClosestPointOnSegment(point: Point, from: Point, to: Point): Point {
-  const segmentX = to.x - from.x;
-  const segmentY = to.y - from.y;
-  const lengthSquared = segmentX * segmentX + segmentY * segmentY;
-  if (lengthSquared === 0) return from;
-  const projection = Math.max(
-    0,
-    Math.min(1, ((point.x - from.x) * segmentX + (point.y - from.y) * segmentY) / lengthSquared)
-  );
-  return { x: from.x + projection * segmentX, y: from.y + projection * segmentY };
+function clampPointToMesh(node: GraphNode, point: Point, width: number, height: number): Point {
+  const halfWidth = getWidth(node) / 2;
+  const halfHeight = getHeight(node) / 2;
+  const minX = MESH_PADDING + halfWidth;
+  const maxX = width - MESH_PADDING - halfWidth;
+  const minY = MESH_PADDING + halfHeight;
+  const maxY = height - MESH_PADDING - halfHeight;
+
+  return {
+    x: minX > maxX ? width / 2 : Math.max(minX, Math.min(maxX, point.x)),
+    y: minY > maxY ? height / 2 : Math.max(minY, Math.min(maxY, point.y)),
+  };
 }
 
-function avoidBranchOverlaps(nodes: GraphNode[], links: GraphLink[]) {
-  for (const node of nodes) {
-    if (node.x === undefined || node.y === undefined) continue;
-    const clearance = Math.hypot(getWidth(node), getHeight(node)) / 2 + 26;
+function constrainNodeToMesh(node: GraphNode, width: number, height: number) {
+  if (node.x === undefined || node.y === undefined) return;
+  const constrained = clampPointToMesh(node, { x: node.x, y: node.y }, width, height);
+  node.x = constrained.x;
+  node.y = constrained.y;
+  if (node.fx !== null && node.fx !== undefined) node.fx = constrained.x;
+  if (node.fy !== null && node.fy !== undefined) node.fy = constrained.y;
+}
 
-    for (const link of links) {
-      if (typeof link.source === "string" || typeof link.target === "string") continue;
-      if (link.source.id === node.id || link.target.id === node.id) continue;
-      if (
-        link.source.x === undefined ||
-        link.source.y === undefined ||
-        link.target.x === undefined ||
-        link.target.y === undefined
-      ) continue;
+function getCurvedLinkPath(link: GraphLink) {
+  if (typeof link.source === "string" || typeof link.target === "string") return "";
+  const source = link.source;
+  const target = link.target;
+  if (
+    source.x === undefined ||
+    source.y === undefined ||
+    target.x === undefined ||
+    target.y === undefined
+  ) return "";
 
-      const closest = getClosestPointOnSegment(
-        { x: node.x, y: node.y },
-        { x: link.source.x, y: link.source.y },
-        { x: link.target.x, y: link.target.y }
-      );
-      let awayX = node.x - closest.x;
-      let awayY = node.y - closest.y;
-      let distance = Math.hypot(awayX, awayY);
-
-      if (distance >= clearance) continue;
-      if (distance < 0.001) {
-        awayX = -(link.target.y - link.source.y);
-        awayY = link.target.x - link.source.x;
-        distance = Math.hypot(awayX, awayY) || 1;
-      }
-
-      const push = (clearance - distance) * 0.22;
-      if (node.fx === null || node.fx === undefined) node.x += (awayX / distance) * push;
-      if (node.fy === null || node.fy === undefined) node.y += (awayY / distance) * push;
-    }
-  }
+  const sourcePoint = getNodeIntersection(source, { x: target.x, y: target.y });
+  const targetPoint = getNodeIntersection(target, { x: source.x, y: source.y });
+  const deltaX = targetPoint.x - sourcePoint.x;
+  const deltaY = targetPoint.y - sourcePoint.y;
+  const curveAmount = Math.min(64, Math.hypot(deltaX, deltaY) * 0.18);
+  const distance = Math.hypot(deltaX, deltaY) || 1;
+  const normalX = -deltaY / distance;
+  const normalY = deltaX / distance;
+  const controlX1 = sourcePoint.x + deltaX * 0.34 + normalX * curveAmount;
+  const controlY1 = sourcePoint.y + deltaY * 0.34 + normalY * curveAmount;
+  const controlX2 = sourcePoint.x + deltaX * 0.66 + normalX * curveAmount;
+  const controlY2 = sourcePoint.y + deltaY * 0.66 + normalY * curveAmount;
+  return `M${sourcePoint.x},${sourcePoint.y} C${controlX1},${controlY1} ${controlX2},${controlY2} ${targetPoint.x},${targetPoint.y}`;
 }
 
 
@@ -611,10 +611,9 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
 
       let ticksCount = 0;
       simulation.on("tick", () => {
-        const liveLinks = (
-          simulation.force("link") as d3.ForceLink<GraphNode, GraphLink>
-        ).links();
-        avoidBranchOverlaps(simulation.nodes(), liveLinks);
+        const meshWidth = containerRef.current?.clientWidth || width;
+        const meshHeight = containerRef.current?.clientHeight || height;
+        simulation.nodes().forEach((node) => constrainNodeToMesh(node, meshWidth, meshHeight));
         ticked();
         ticksCount++;
         if (ticksCount === 30 && !hasInitialCenteredRef.current) {
@@ -626,29 +625,9 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
       simulationRef.current = simulation;
 
       function ticked() {
-        mainGroup.selectAll<SVGPathElement, GraphLink>(".link").attr("d", (d) => {
-          if (typeof d.source === "string" || typeof d.target === "string") return "";
-          const sourceNode = d.source;
-          const targetNode = d.target;
-          if (
-            sourceNode.x === undefined ||
-            sourceNode.y === undefined ||
-            targetNode.x === undefined ||
-            targetNode.y === undefined
-          ) {
-            return "";
-          }
-          const sPt = getNodeIntersection(sourceNode, { x: targetNode.x, y: targetNode.y });
-          const tPt = getNodeIntersection(targetNode, { x: sourceNode.x, y: sourceNode.y });
-          
-          const dx = tPt.x - sPt.x;
-          const cx1 = sPt.x + dx * 0.5;
-          const cy1 = sPt.y;
-          const cx2 = tPt.x - dx * 0.5;
-          const cy2 = tPt.y;
-          
-          return `M${sPt.x},${sPt.y} C${cx1},${cy1} ${cx2},${cy2} ${tPt.x},${tPt.y}`;
-        });
+        mainGroup
+          .selectAll<SVGPathElement, GraphLink>(".link")
+          .attr("d", (link) => getCurvedLinkPath(link));
 
         mainGroup.selectAll<SVGGElement, GraphNode>(".node").attr("transform", (d) => `translate(${d.x},${d.y})`);
 
@@ -729,10 +708,15 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
           const distance = baseDistance + ring * 96;
           for (const offset of angularOffsets) {
             const angle = baseAngle + offset;
-            const candidate = {
-              x: parentX + Math.cos(angle) * distance,
-              y: parentY + Math.sin(angle) * distance,
-            };
+            const candidate = clampPointToMesh(
+              node,
+              {
+                x: parentX + Math.cos(angle) * distance,
+                y: parentY + Math.sin(angle) * distance,
+              },
+              width,
+              height
+            );
             const candidateRect = getNodeRect(node, candidate.x, candidate.y, 34);
             let hazards = 0;
 
@@ -961,27 +945,42 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
         });
       }
 
+      const releaseConflictingPins = (activeNode: GraphNode) => {
+        const activeRect = getNodeRect(activeNode, undefined, undefined, 28);
+        nodes.forEach((otherNode) => {
+          if (otherNode.id === activeNode.id) return;
+          if (!rectsOverlap(activeRect, getNodeRect(otherNode, undefined, undefined, 28))) return;
+          otherNode.fx = null;
+          otherNode.fy = null;
+        });
+        simulationRef.current?.alpha(0.45).restart();
+      };
+
       // Drag behavior
       const drag = d3
         .drag<SVGGElement, GraphNode>()
         .on("start", (event, d) => {
-          if (!event.active) simulationRef.current?.alphaTarget(0.3).restart();
+          simulationRef.current?.stop();
           d.fx = d.x;
           d.fy = d.y;
           d3.select(event.sourceEvent.target.closest('.node')).classed("is-dragging", true);
         })
         .on("drag", (event, d) => {
-          d.fx = event.x;
-          d.fy = event.y;
+          const constrained = clampPointToMesh(d, { x: event.x, y: event.y }, width, height);
+          d.x = constrained.x;
+          d.y = constrained.y;
+          d.fx = constrained.x;
+          d.fy = constrained.y;
+          tickedRef.current?.();
         })
         .on("end", (event, d) => {
-          if (!event.active) simulationRef.current?.alphaTarget(0);
           d3.select(event.sourceEvent.target.closest('.node')).classed("is-dragging", false);
           d.originalX = d.x;
           d.originalY = d.y;
           // Manual placement is authoritative until the user resets the view.
           d.fx = d.x;
           d.fy = d.y;
+          tickedRef.current?.();
         });
 
       const resize = d3
@@ -1023,6 +1022,7 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
             d.height = defaults.height * nextScale;
           }
 
+          constrainNodeToMesh(d, width, height);
           const nodeElement = this.parentNode as SVGGElement;
           updateNodeGeometry(nodeElement, d);
           simulationRef.current?.alpha(0.18).restart();
@@ -1036,6 +1036,7 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
           d.originalY = d.y;
           d.fx = d.x;
           d.fy = d.y;
+          releaseConflictingPins(d);
           simulationRef.current?.alphaTarget(0);
         });
 
@@ -1068,7 +1069,9 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
           d.height = Math.max(limits.minHeight, Math.min(limits.maxHeight, defaults.height * scale));
         }
 
+        constrainNodeToMesh(d, width, height);
         updateNodeGeometry(this.parentNode as SVGGElement, d);
+        releaseConflictingPins(d);
         simulationRef.current?.alpha(0.18).restart();
         tickedRef.current?.();
       };
