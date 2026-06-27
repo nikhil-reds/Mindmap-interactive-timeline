@@ -1246,165 +1246,188 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
 
           if (item.mediaType === "Video") {
             const hasSource = Boolean(item.videoSrc);
-            const videoSelection = stage
-              .append("xhtml:video")
-              .attr("class", "node-video")
-              .attr("poster", item.image)
-              .attr("preload", "metadata")
-              .attr("playsinline", "")
-              .attr("muted", "")
-              .attr("autoplay", "")
-              .attr("loop", "")
-              .attr("aria-label", `${item.title} video`);
+            const isYouTube = hasSource && (item.videoSrc.includes("youtube.com") || item.videoSrc.includes("youtu.be"));
 
-            if (item.videoSrc) videoSelection.attr("src", item.videoSrc);
-            if (item.captionsSrc) {
-              videoSelection
-                .append("xhtml:track")
-                .attr("kind", "captions")
-                .attr("src", item.captionsSrc)
-                .attr("srclang", "en")
-                .attr("label", "English");
-            }
+            if (isYouTube) {
+              let videoId = "";
+              const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+              const match = item.videoSrc!.match(regExp);
+              if (match && match[2].length === 11) {
+                videoId = match[2];
+              }
+              const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : item.videoSrc!;
 
-            const video = videoSelection.node() as HTMLVideoElement;
-            video.muted = true;
-
-            if (!hasSource) {
               stage
+                .append("xhtml:iframe")
+                .attr("class", "node-video")
+                .attr("src", embedUrl)
+                .attr("frameborder", "0")
+                .attr("allow", "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture")
+                .attr("allowfullscreen", "")
+                .style("border", "none")
+                .style("width", "100%")
+                .style("height", "100%");
+            } else {
+              const videoSelection = stage
+                .append("xhtml:video")
+                .attr("class", "node-video")
+                .attr("poster", item.image)
+                .attr("preload", "metadata")
+                .attr("playsinline", "")
+                .attr("muted", "")
+                .attr("autoplay", "")
+                .attr("loop", "")
+                .attr("aria-label", `${item.title} video`);
+
+              if (item.videoSrc) videoSelection.attr("src", item.videoSrc);
+              if (item.captionsSrc) {
+                videoSelection
+                  .append("xhtml:track")
+                  .attr("kind", "captions")
+                  .attr("src", item.captionsSrc)
+                  .attr("srclang", "en")
+                  .attr("label", "English");
+              }
+
+              const video = videoSelection.node() as HTMLVideoElement;
+              video.muted = true;
+
+              if (!hasSource) {
+                stage
+                  .append("xhtml:div")
+                  .attr("class", "video-source-note")
+                  .text("Add videoSrc to enable playback");
+              }
+
+              const controls = shell
                 .append("xhtml:div")
-                .attr("class", "video-source-note")
-                .text("Add videoSrc to enable playback");
-            }
+                .attr("class", "node-video-controls")
+                .on("pointerdown", (event) => event.stopPropagation())
+                .on("click", (event) => event.stopPropagation());
 
-            const controls = shell
-              .append("xhtml:div")
-              .attr("class", "node-video-controls")
-              .on("pointerdown", (event) => event.stopPropagation())
-              .on("click", (event) => event.stopPropagation());
+              const playButton = controls
+                .append("xhtml:button")
+                .attr("type", "button")
+                .attr("class", "video-control-btn video-play-btn")
+                .attr("aria-label", "Play video")
+                .property("disabled", !hasSource)
+                .text("▶");
 
-            const playButton = controls
-              .append("xhtml:button")
-              .attr("type", "button")
-              .attr("class", "video-control-btn video-play-btn")
-              .attr("aria-label", "Play video")
-              .property("disabled", !hasSource)
-              .text("▶");
+              const progress = controls
+                .append("xhtml:input")
+                .attr("class", "video-progress")
+                .attr("type", "range")
+                .attr("min", "0")
+                .attr("max", "100")
+                .attr("step", "0.1")
+                .attr("value", "0")
+                .attr("aria-label", "Video progress")
+                .property("disabled", !hasSource);
 
-            const progress = controls
-              .append("xhtml:input")
-              .attr("class", "video-progress")
-              .attr("type", "range")
-              .attr("min", "0")
-              .attr("max", "100")
-              .attr("step", "0.1")
-              .attr("value", "0")
-              .attr("aria-label", "Video progress")
-              .property("disabled", !hasSource);
+              const time = controls
+                .append("xhtml:span")
+                .attr("class", "video-time")
+                .text("0:00 / 0:00");
 
-            const time = controls
-              .append("xhtml:span")
-              .attr("class", "video-time")
-              .text("0:00 / 0:00");
+              const speed = controls
+                .append("xhtml:select")
+                .attr("class", "video-speed")
+                .attr("aria-label", "Playback speed")
+                .property("disabled", !hasSource);
+              [0.5, 1, 1.25, 1.5, 2].forEach((rate) => {
+                speed
+                  .append("xhtml:option")
+                  .attr("value", String(rate))
+                  .property("selected", rate === 1)
+                  .text(`${rate}×`);
+              });
 
-            const speed = controls
-              .append("xhtml:select")
-              .attr("class", "video-speed")
-              .attr("aria-label", "Playback speed")
-              .property("disabled", !hasSource);
-            [0.5, 1, 1.25, 1.5, 2].forEach((rate) => {
-              speed
-                .append("xhtml:option")
-                .attr("value", String(rate))
-                .property("selected", rate === 1)
-                .text(`${rate}×`);
-            });
+              const muteButton = controls
+                .append("xhtml:button")
+                .attr("type", "button")
+                .attr("class", "video-control-btn video-mute-btn")
+                .attr("aria-label", "Unmute video")
+                .property("disabled", !hasSource)
+                .text("🔇");
 
-            const muteButton = controls
-              .append("xhtml:button")
-              .attr("type", "button")
-              .attr("class", "video-control-btn video-mute-btn")
-              .attr("aria-label", "Unmute video")
-              .property("disabled", !hasSource)
-              .text("🔇");
+              const volume = controls
+                .append("xhtml:input")
+                .attr("class", "video-volume")
+                .attr("type", "range")
+                .attr("min", "0")
+                .attr("max", "1")
+                .attr("step", "0.05")
+                .attr("value", "0.8")
+                .attr("aria-label", "Video volume")
+                .property("disabled", !hasSource);
 
-            const volume = controls
-              .append("xhtml:input")
-              .attr("class", "video-volume")
-              .attr("type", "range")
-              .attr("min", "0")
-              .attr("max", "1")
-              .attr("step", "0.05")
-              .attr("value", "0.8")
-              .attr("aria-label", "Video volume")
-              .property("disabled", !hasSource);
+              const fullscreenButton = controls
+                .append("xhtml:button")
+                .attr("type", "button")
+                .attr("class", "video-control-btn video-fullscreen-btn")
+                .attr("aria-label", "Enter fullscreen")
+                .property("disabled", !hasSource)
+                .text("⛶");
 
-            const fullscreenButton = controls
-              .append("xhtml:button")
-              .attr("type", "button")
-              .attr("class", "video-control-btn video-fullscreen-btn")
-              .attr("aria-label", "Enter fullscreen")
-              .property("disabled", !hasSource)
-              .text("⛶");
-
-            const updatePlayState = () => {
-              playButton.text(video.paused ? "▶" : "❚❚");
-              playButton.attr("aria-label", video.paused ? "Play video" : "Pause video");
-            };
-            const updateTimeline = () => {
-              const duration = Number.isFinite(video.duration) ? video.duration : 0;
-              const percentage = duration ? (video.currentTime / duration) * 100 : 0;
-              progress.property("value", percentage);
-              const formatTime = (seconds: number) => {
-                const safeSeconds = Number.isFinite(seconds) ? Math.max(0, seconds) : 0;
-                const minutes = Math.floor(safeSeconds / 60);
-                const remainder = Math.floor(safeSeconds % 60).toString().padStart(2, "0");
-                return `${minutes}:${remainder}`;
+              const updatePlayState = () => {
+                playButton.text(video.paused ? "▶" : "❚❚");
+                playButton.attr("aria-label", video.paused ? "Play video" : "Pause video");
               };
-              time.text(`${formatTime(video.currentTime)} / ${formatTime(duration)}`);
-            };
+              const updateTimeline = () => {
+                const duration = Number.isFinite(video.duration) ? video.duration : 0;
+                const percentage = duration ? (video.currentTime / duration) * 100 : 0;
+                progress.property("value", percentage);
+                const formatTime = (seconds: number) => {
+                  const safeSeconds = Number.isFinite(seconds) ? Math.max(0, seconds) : 0;
+                  const minutes = Math.floor(safeSeconds / 60);
+                  const remainder = Math.floor(safeSeconds % 60).toString().padStart(2, "0");
+                  return `${minutes}:${remainder}`;
+                };
+                time.text(`${formatTime(video.currentTime)} / ${formatTime(duration)}`);
+              };
 
-            playButton.on("click", () => {
-              if (video.paused) void video.play().catch(() => undefined);
-              else video.pause();
-            });
-            stage
-              .on("pointerdown", (event) => event.stopPropagation())
-              .on("click", (event) => {
-                event.stopPropagation();
-                if (!hasSource) return;
+              playButton.on("click", () => {
                 if (video.paused) void video.play().catch(() => undefined);
                 else video.pause();
               });
-            progress.on("input", (event) => {
-              if (!video.duration) return;
-              const input = event.currentTarget as HTMLInputElement;
-              video.currentTime = (Number(input.value) / 100) * video.duration;
-            });
-            speed.on("change", (event) => {
-              video.playbackRate = Number((event.currentTarget as HTMLSelectElement).value);
-            });
-            muteButton.on("click", () => {
-              video.muted = !video.muted;
-              muteButton.text(video.muted ? "🔇" : "🔊");
-              muteButton.attr("aria-label", video.muted ? "Unmute video" : "Mute video");
-            });
-            volume.on("input", (event) => {
-              const nextVolume = Number((event.currentTarget as HTMLInputElement).value);
-              video.volume = nextVolume;
-              video.muted = nextVolume === 0;
-              muteButton.text(video.muted ? "🔇" : "🔊");
-            });
-            fullscreenButton.on("click", () => {
-              const shellElement = shell.node() as HTMLElement;
-              void shellElement.requestFullscreen?.();
-            });
+              stage
+                .on("pointerdown", (event) => event.stopPropagation())
+                .on("click", (event) => {
+                  event.stopPropagation();
+                  if (!hasSource) return;
+                  if (video.paused) void video.play().catch(() => undefined);
+                  else video.pause();
+                });
+              progress.on("input", (event) => {
+                if (!video.duration) return;
+                const input = event.currentTarget as HTMLInputElement;
+                video.currentTime = (Number(input.value) / 100) * video.duration;
+              });
+              speed.on("change", (event) => {
+                video.playbackRate = Number((event.currentTarget as HTMLSelectElement).value);
+              });
+              muteButton.on("click", () => {
+                video.muted = !video.muted;
+                muteButton.text(video.muted ? "🔇" : "🔊");
+                muteButton.attr("aria-label", video.muted ? "Unmute video" : "Mute video");
+              });
+              volume.on("input", (event) => {
+                const nextVolume = Number((event.currentTarget as HTMLInputElement).value);
+                video.volume = nextVolume;
+                video.muted = nextVolume === 0;
+                muteButton.text(video.muted ? "🔇" : "🔊");
+              });
+              fullscreenButton.on("click", () => {
+                const shellElement = shell.node() as HTMLElement;
+                void shellElement.requestFullscreen?.();
+              });
 
-            video.addEventListener("play", updatePlayState);
-            video.addEventListener("pause", updatePlayState);
-            video.addEventListener("timeupdate", updateTimeline);
-            video.addEventListener("loadedmetadata", updateTimeline);
-            if (hasSource) void video.play().catch(() => undefined);
+              video.addEventListener("play", updatePlayState);
+              video.addEventListener("pause", updatePlayState);
+              video.addEventListener("timeupdate", updateTimeline);
+              video.addEventListener("loadedmetadata", updateTimeline);
+              if (hasSource) void video.play().catch(() => undefined);
+            }
           } else {
             stage
               .append("xhtml:img")

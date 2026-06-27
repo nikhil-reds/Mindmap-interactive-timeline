@@ -347,6 +347,7 @@ export const timelineData: TimelineData = {
       description: "When the built world stops, Rubenius turns to product. IIT Bombay's D'Source recognises two distinct pandemic solutions. Tech Briefs adds two 'Most Popular Innovation' awards.",
       image: "/images/rubenius/redsShift12.png",
       mediaType: "Video",
+      videoSrc: "https://youtu.be/2fY7y7cKl98?si=8jv4jbMupPllKlqi",
       awards: [
         "D'Source — IIT Bombay — Winner — Product Solution for Pandemic",
         "D'Source — IIT Bombay — Winner — Isolation Solution for Pandemic",
@@ -445,6 +446,7 @@ export const timelineData: TimelineData = {
       description: "A 3,000-sqft Schneider Electric Experience Centre showcases voice-activated AI, parametric audio and IoT — winning FOAID's Innovative Experience Centre of the Year. Spaciux Platinum, Young Designer of the Year and A.C.E.D. recognitions follow.",
       image: "/images/rubenius/schneiderCase.avif",
       mediaType: "Video",
+      videoSrc: "https://youtu.be/bn6InXi2gt0?si=fNhi-__fLID1rVSV",
       awards: [
         "Spaciux Platinum Awards — Large Work Space Design",
         "Young Designer of the Year — Commercial Design",
@@ -613,6 +615,7 @@ export const timelineData: TimelineData = {
       description: "The studio's interactive and immersive practice — combining hardware, software and physical space — earns a Design Milestone Award. Spaceiux recognises shopping-space design and FOAID adds a Bronze.",
       image: "/images/rubenius/schneider23.jpg",
       mediaType: "Video",
+      videoSrc: "https://youtu.be/6vWFokOO9K8?si=vUg0PSw4kLC3BrzO",
       awards: [
         "Design Milestone Award — Innovative Technology Integration",
         "Spaceiux — Shopping Space",
