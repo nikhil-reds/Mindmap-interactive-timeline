@@ -7,6 +7,9 @@ export interface TimelineItem {
   description: string;
   image: string;
   mediaType: "Image" | "Video";
+  /** Direct MP4/WebM URL. Video items without a source render their poster and a clear fallback. */
+  videoSrc?: string;
+  captionsSrc?: string;
   awards: string[];
 }
 
@@ -40,6 +43,8 @@ export interface GraphNode extends d3.SimulationNodeDatum {
   fx?: number | null;
   fy?: number | null;
   isExpanded?: boolean;
+  width?: number;
+  height?: number;
 }
 
 export interface GraphLink extends d3.SimulationLinkDatum<GraphNode> {

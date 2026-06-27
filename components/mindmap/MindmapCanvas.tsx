@@ -1,15 +1,23 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useImperativeHandle, forwardRef } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useState,
+  useRef,
+  useEffect,
+  useImperativeHandle,
+  forwardRef,
+} from "react";
 import * as d3 from "d3";
-import { TimelineItem, GraphNode, GraphLink } from "./types";
+import { GraphNode, GraphLink } from "./types";
 import { timelineData, categoryMeta } from "./data";
 
 interface MindmapCanvasProps {
   selectedNodeId: string | null;
   setSelectedNodeId: (id: string | null) => void;
   collapsedYears: Set<number>;
-  setCollapsedYears: (years: Set<number>) => void;
+  setCollapsedYears: Dispatch<SetStateAction<Set<number>>>;
 }
 
 export interface MindmapCanvasRef {
@@ -23,23 +31,134 @@ interface Point {
   y: number;
 }
 
+interface NodeRect {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
+
+const NODE_SIZE = {
+  center: { width: 110, height: 110 },
+  year: { width: 40, height: 40 },
+  image: { width: 112, height: 92 },
+  video: { width: 240, height: 156 },
+  text: { width: 320, height: 210 },
+  awards: { width: 200, height: 60 },
+} as const;
+
+const NODE_LIMITS = {
+  image: { minWidth: 84, minHeight: 72, maxWidth: 420, maxHeight: 344 },
+  video: { minWidth: 180, minHeight: 118, maxWidth: 640, maxHeight: 416 },
+  text: { minWidth: 220, minHeight: 140, maxWidth: 640, maxHeight: 520 },
+} as const;
+
+function getDefaultSize(node: GraphNode) {
+  if (node.type === "center") return NODE_SIZE.center;
+  if (node.type === "year") return NODE_SIZE.year;
+  if (node.type === "text") return NODE_SIZE.text;
+  if (node.type === "awards") return NODE_SIZE.awards;
+  if (node.type === "media" && node.itemData?.mediaType === "Video") {
+    return NODE_SIZE.video;
+  }
+  return NODE_SIZE.image;
+}
+
+function initializeNodeSize(node: GraphNode) {
+  const fallback = getDefaultSize(node);
+  node.width ??= fallback.width;
+  node.height ??= fallback.height;
+}
+
+function getNodeRect(node: GraphNode, x = node.x ?? 0, y = node.y ?? 0, padding = 0): NodeRect {
+  const halfWidth = getWidth(node) / 2 + padding;
+  const halfHeight = getHeight(node) / 2 + padding;
+  return {
+    left: x - halfWidth,
+    right: x + halfWidth,
+    top: y - halfHeight,
+    bottom: y + halfHeight,
+  };
+}
+
+function rectsOverlap(a: NodeRect, b: NodeRect) {
+  return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+}
+
+function pointInsideRect(point: Point, rect: NodeRect) {
+  return point.x >= rect.left && point.x <= rect.right && point.y >= rect.top && point.y <= rect.bottom;
+}
+
+function segmentCrossesRect(from: Point, to: Point, rect: NodeRect) {
+  // Sampling is sufficient here because graph links are short and the obstacle rectangles are large.
+  for (let step = 1; step < 20; step += 1) {
+    const t = step / 20;
+    const point = {
+      x: from.x + (to.x - from.x) * t,
+      y: from.y + (to.y - from.y) * t,
+    };
+    if (pointInsideRect(point, rect)) return true;
+  }
+  return false;
+}
+
+function getClosestPointOnSegment(point: Point, from: Point, to: Point): Point {
+  const segmentX = to.x - from.x;
+  const segmentY = to.y - from.y;
+  const lengthSquared = segmentX * segmentX + segmentY * segmentY;
+  if (lengthSquared === 0) return from;
+  const projection = Math.max(
+    0,
+    Math.min(1, ((point.x - from.x) * segmentX + (point.y - from.y) * segmentY) / lengthSquared)
+  );
+  return { x: from.x + projection * segmentX, y: from.y + projection * segmentY };
+}
+
+function avoidBranchOverlaps(nodes: GraphNode[], links: GraphLink[]) {
+  for (const node of nodes) {
+    if (node.x === undefined || node.y === undefined) continue;
+    const clearance = Math.hypot(getWidth(node), getHeight(node)) / 2 + 26;
+
+    for (const link of links) {
+      if (typeof link.source === "string" || typeof link.target === "string") continue;
+      if (link.source.id === node.id || link.target.id === node.id) continue;
+      if (
+        link.source.x === undefined ||
+        link.source.y === undefined ||
+        link.target.x === undefined ||
+        link.target.y === undefined
+      ) continue;
+
+      const closest = getClosestPointOnSegment(
+        { x: node.x, y: node.y },
+        { x: link.source.x, y: link.source.y },
+        { x: link.target.x, y: link.target.y }
+      );
+      let awayX = node.x - closest.x;
+      let awayY = node.y - closest.y;
+      let distance = Math.hypot(awayX, awayY);
+
+      if (distance >= clearance) continue;
+      if (distance < 0.001) {
+        awayX = -(link.target.y - link.source.y);
+        awayY = link.target.x - link.source.x;
+        distance = Math.hypot(awayX, awayY) || 1;
+      }
+
+      const push = (clearance - distance) * 0.22;
+      if (node.fx === null || node.fx === undefined) node.x += (awayX / distance) * push;
+      if (node.fy === null || node.fy === undefined) node.y += (awayY / distance) * push;
+    }
+  }
+}
+
 
 function getWidth(node: GraphNode): number {
-  if (node.type === "center") return 110;
-  if (node.type === "year") return 40;
-  if (node.type === "media") return 50;
-  if (node.type === "text") return 220;
-  if (node.type === "awards") return 180;
-  return 40;
+  return node.width ?? getDefaultSize(node).width;
 }
 
 function getHeight(node: GraphNode): number {
-  if (node.type === "center") return 110;
-  if (node.type === "year") return 40;
-  if (node.type === "media") return 50;
-  if (node.type === "text") return 100;
-  if (node.type === "awards") return 50;
-  return 40;
+  return node.height ?? getDefaultSize(node).height;
 }
 
 function getNodeIntersection(node: GraphNode, fromPoint: Point): Point {
@@ -57,15 +176,8 @@ function getNodeIntersection(node: GraphNode, fromPoint: Point): Point {
       y: y + (dy / dist) * r,
     };
   } else {
-    let halfW = 25;
-    let halfH = 25;
-    if (node.type === "text") {
-      halfW = 110;
-      halfH = 50;
-    } else if (node.type === "awards") {
-      halfW = 90;
-      halfH = 25;
-    }
+    const halfW = getWidth(node) / 2;
+    const halfH = getHeight(node) / 2;
     
     const dx = fromPoint.x - x;
     const dy = fromPoint.y - y;
@@ -186,6 +298,7 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
     const containerRef = useRef<HTMLDivElement | null>(null);
     const zoomBehaviorRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
     const simulationRef = useRef<d3.Simulation<GraphNode, GraphLink> | null>(null);
+    const tickedRef = useRef<(() => void) | null>(null);
 
 
 
@@ -202,10 +315,12 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
 
       nodes.forEach((node) => {
         if (node.x !== undefined && node.y !== undefined) {
-          if (node.x < minX) minX = node.x;
-          if (node.x > maxX) maxX = node.x;
-          if (node.y < minY) minY = node.y;
-          if (node.y > maxY) maxY = node.y;
+          const halfWidth = getWidth(node) / 2;
+          const halfHeight = getHeight(node) / 2;
+          if (node.x - halfWidth < minX) minX = node.x - halfWidth;
+          if (node.x + halfWidth > maxX) maxX = node.x + halfWidth;
+          if (node.y - halfHeight < minY) minY = node.y - halfHeight;
+          if (node.y + halfHeight > maxY) maxY = node.y + halfHeight;
         }
       });
 
@@ -280,11 +395,8 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
         .on("zoom", (event) => {
           mainGroup.attr("transform", event.transform);
           const k = event.transform.k;
-          d3.selectAll(".node-center circle").attr("transform", `scale(${1 / k})`);
-          d3.selectAll(".node-center text").attr("transform", `scale(${1 / k})`);
-          d3.selectAll(".node-year circle").attr("transform", `scale(${1 / k})`);
-          d3.selectAll(".node-year text").attr("transform", `scale(${1 / k})`);
-          d3.selectAll(".node-year .expand-indicator").attr("transform", `scale(${1 / k})`);
+          d3.selectAll(".node-center .node-content").attr("transform", `scale(${1 / k})`);
+          d3.selectAll(".node-year .node-content").attr("transform", `scale(${1 / k})`);
         });
 
       zoomBehaviorRef.current = zoomBehavior;
@@ -304,9 +416,16 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
           d3
             .forceLink<GraphNode, GraphLink>()
             .id((d) => d.id)
-            .distance(() => 180)
-            .strength((d: any) => {
-              if (d.type === "center-era" || d.source === "root" || d.source.id === "root" || d.target === "root" || d.target.id === "root") {
+            .distance((d) => {
+              if (typeof d.source === "string" || typeof d.target === "string") return 180;
+              const horizontalClearance = getWidth(d.source) / 2 + getWidth(d.target) / 2 + 110;
+              const verticalClearance = getHeight(d.source) / 2 + getHeight(d.target) / 2 + 110;
+              return Math.max(180, Math.min(420, Math.max(horizontalClearance, verticalClearance)));
+            })
+            .strength((d) => {
+              const sourceId = typeof d.source === "string" ? d.source : d.source.id;
+              const targetId = typeof d.target === "string" ? d.target : d.target.id;
+              if (d.type === "center-era" || sourceId === "root" || targetId === "root") {
                 return 0.3;
               }
               return 1.2;
@@ -328,20 +447,32 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
           d3
             .forceCollide<GraphNode>()
             .radius((d) => {
-              if (d.type === "center") return 75;
-              if (d.type === "year") return 40;
-              if (d.type === "media") return 35;
-              if (d.type === "text") return 120;
-              if (d.type === "awards") return 95;
-              return 20;
+              return Math.hypot(getWidth(d), getHeight(d)) / 2 + 18;
             })
-            .strength(0.8)
+            .strength(1)
+            .iterations(4)
         )
         .force("rect-collide", rectCollide())
+        .force(
+          "sector-x",
+          d3.forceX<GraphNode>((d) => d.originalX ?? width / 2).strength((d) =>
+            d.type === "center" ? 0.04 : 0.075
+          )
+        )
+        .force(
+          "sector-y",
+          d3.forceY<GraphNode>((d) => d.originalY ?? height / 2).strength((d) =>
+            d.type === "center" ? 0.04 : 0.075
+          )
+        )
         .force("center", d3.forceCenter(width / 2, height / 2));
 
       let ticksCount = 0;
       simulation.on("tick", () => {
+        const liveLinks = (
+          simulation.force("link") as d3.ForceLink<GraphNode, GraphLink>
+        ).links();
+        avoidBranchOverlaps(simulation.nodes(), liveLinks);
         ticked();
         ticksCount++;
         if (ticksCount === 30 && !hasInitialCenteredRef.current) {
@@ -353,18 +484,22 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
       simulationRef.current = simulation;
 
       function ticked() {
-        mainGroup.selectAll<SVGPathElement, GraphLink>(".link").attr("d", (d: any) => {
+        mainGroup.selectAll<SVGPathElement, GraphLink>(".link").attr("d", (d) => {
+          if (typeof d.source === "string" || typeof d.target === "string") return "";
           const sourceNode = d.source;
           const targetNode = d.target;
-          if (!sourceNode || !targetNode || sourceNode.x === undefined || targetNode.x === undefined) {
+          if (
+            sourceNode.x === undefined ||
+            sourceNode.y === undefined ||
+            targetNode.x === undefined ||
+            targetNode.y === undefined
+          ) {
             return "";
           }
           const sPt = getNodeIntersection(sourceNode, { x: targetNode.x, y: targetNode.y });
           const tPt = getNodeIntersection(targetNode, { x: sourceNode.x, y: sourceNode.y });
           
           const dx = tPt.x - sPt.x;
-          const dy = tPt.y - sPt.y;
-          
           const cx1 = sPt.x + dx * 0.5;
           const cy1 = sPt.y;
           const cx2 = tPt.x - dx * 0.5;
@@ -378,16 +513,16 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
         if (svgRef.current) {
           const transform = d3.zoomTransform(svgRef.current);
           const k = transform.k;
-          mainGroup.selectAll(".node-center circle").attr("transform", `scale(${1 / k})`);
-          mainGroup.selectAll(".node-center text").attr("transform", `scale(${1 / k})`);
-          mainGroup.selectAll(".node-year circle").attr("transform", `scale(${1 / k})`);
-          mainGroup.selectAll(".node-year text").attr("transform", `scale(${1 / k})`);
-          mainGroup.selectAll(".node-year .expand-indicator").attr("transform", `scale(${1 / k})`);
+          mainGroup.selectAll(".node-center .node-content").attr("transform", `scale(${1 / k})`);
+          mainGroup.selectAll(".node-year .node-content").attr("transform", `scale(${1 / k})`);
         }
       }
 
+      tickedRef.current = ticked;
+
       return () => {
         simulation.stop();
+        tickedRef.current = null;
       };
     }, []);
 
@@ -423,6 +558,95 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
         });
       }
 
+      const findVacantPosition = (node: GraphNode, parent: GraphNode): Point => {
+        const parentX = parent.x ?? width / 2;
+        const parentY = parent.y ?? height / 2;
+        const root = nodes.find((existing) => existing.id === "root");
+        const seededDirection =
+          node.x !== undefined && node.y !== undefined
+            ? Math.atan2(node.y - parentY, node.x - parentX)
+            : undefined;
+        const outwardDirection =
+          parent.id !== "root" && root?.x !== undefined && root.y !== undefined
+            ? Math.atan2(parentY - root.y, parentX - root.x)
+            : 0;
+        const baseAngle = seededDirection ?? outwardDirection;
+        const angularOffsets = [0, 0.42, -0.42, 0.84, -0.84, 1.26, -1.26, 1.68, -1.68, Math.PI];
+        const baseDistance =
+          Math.hypot(getWidth(parent), getHeight(parent)) / 2 +
+          Math.hypot(getWidth(node), getHeight(node)) / 2 +
+          72;
+        let bestPosition = { x: parentX + Math.cos(baseAngle) * baseDistance, y: parentY + Math.sin(baseAngle) * baseDistance };
+        let bestScore = Number.POSITIVE_INFINITY;
+
+        for (let ring = 0; ring < 6; ring += 1) {
+          const distance = baseDistance + ring * 96;
+          for (const offset of angularOffsets) {
+            const angle = baseAngle + offset;
+            const candidate = {
+              x: parentX + Math.cos(angle) * distance,
+              y: parentY + Math.sin(angle) * distance,
+            };
+            const candidateRect = getNodeRect(node, candidate.x, candidate.y, 34);
+            let hazards = 0;
+
+            for (const existing of nodes) {
+              if (rectsOverlap(candidateRect, getNodeRect(existing, undefined, undefined, 22))) {
+                hazards += 100_000;
+              }
+
+              if (
+                existing.id !== parent.id &&
+                existing.x !== undefined &&
+                existing.y !== undefined &&
+                segmentCrossesRect(
+                  { x: parentX, y: parentY },
+                  candidate,
+                  getNodeRect(existing, undefined, undefined, 18)
+                )
+              ) {
+                hazards += 40_000;
+              }
+            }
+
+            for (const link of links) {
+              const sourceId = typeof link.source === "string" ? link.source : link.source.id;
+              const targetId = typeof link.target === "string" ? link.target : link.target.id;
+              const source = nodes.find((existing) => existing.id === sourceId);
+              const target = nodes.find((existing) => existing.id === targetId);
+              if (
+                source?.x !== undefined &&
+                source.y !== undefined &&
+                target?.x !== undefined &&
+                target.y !== undefined &&
+                segmentCrossesRect(
+                  { x: source.x, y: source.y },
+                  { x: target.x, y: target.y },
+                  candidateRect
+                )
+              ) {
+                hazards += 25_000;
+              }
+            }
+
+            const outsideViewport =
+              candidateRect.left < 48 ||
+              candidateRect.top < 48 ||
+              candidateRect.right > width - 48 ||
+              candidateRect.bottom > height - 48;
+            const score = hazards + ring * 120 + Math.abs(offset) * 40 + (outsideViewport ? 4_000 : 0);
+
+            if (score < bestScore) {
+              bestScore = score;
+              bestPosition = candidate;
+            }
+            if (hazards === 0 && !outsideViewport) return candidate;
+          }
+        }
+
+        return bestPosition;
+      };
+
       const restoreNodePhysics = (node: GraphNode, parent?: GraphNode) => {
         const prev = prevNodesMap.get(node.id);
         if (prev) {
@@ -432,10 +656,51 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
           node.vy = prev.vy;
           node.fx = prev.fx;
           node.fy = prev.fy;
+          node.width = prev.width;
+          node.height = prev.height;
+          node.originalX = prev.originalX;
+          node.originalY = prev.originalY;
         } else if (parent && parent.x !== undefined && parent.y !== undefined) {
-          node.x = parent.x;
-          node.y = parent.y;
+          initializeNodeSize(node);
+          const vacantPosition = findVacantPosition(node, parent);
+          node.x = vacantPosition.x;
+          node.y = vacantPosition.y;
+          node.originalX = vacantPosition.x;
+          node.originalY = vacantPosition.y;
         }
+        initializeNodeSize(node);
+        node.originalX ??= node.x;
+        node.originalY ??= node.y;
+      };
+
+      const updateNodeGeometry = (
+        element: SVGGElement,
+        node: GraphNode
+      ) => {
+        const selection = d3.select<SVGGElement, GraphNode>(element);
+        const nodeWidth = getWidth(node);
+        const nodeHeight = getHeight(node);
+
+        selection
+          .select<SVGForeignObjectElement>(".node-foreign")
+          .attr("x", -nodeWidth / 2)
+          .attr("y", -nodeHeight / 2)
+          .attr("width", nodeWidth)
+          .attr("height", nodeHeight);
+
+        selection
+          .select<SVGGElement>(".resize-handle")
+          .attr("transform", `translate(${nodeWidth / 2},${nodeHeight / 2})`);
+
+        selection
+          .select<SVGTextElement>(".node-size-label")
+          .attr("x", nodeWidth / 2 - 10)
+          .attr("y", nodeHeight / 2 + 24)
+          .text(`${Math.round(nodeWidth)} × ${Math.round(nodeHeight)}`);
+
+        selection
+          .select<HTMLElement>(".media-node-shell")
+          .classed("is-compact", nodeWidth < 220 || nodeHeight < 142);
       };
 
       // 1. Center node
@@ -566,14 +831,110 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
         .on("end", (event, d) => {
           if (!event.active) simulationRef.current?.alphaTarget(0);
           d3.select(event.sourceEvent.target.closest('.node')).classed("is-dragging", false);
+          d.originalX = d.x;
+          d.originalY = d.y;
+          // Release after drag so collision forces can always resolve future overlaps.
+          d.fx = null;
+          d.fy = null;
+        });
+
+      const resize = d3
+        .drag<SVGGElement, GraphNode>()
+        .on("start", (event, d) => {
+          event.sourceEvent.stopPropagation();
           d.fx = d.x;
           d.fy = d.y;
+          d3.select((event.sourceEvent.target as Element).closest(".node"))
+            .classed("is-resizing", true);
+        })
+        .on("drag", function (event, d) {
+          event.sourceEvent.stopPropagation();
+          const deltaWidth = Math.abs(event.x - (d.x ?? 0)) * 2;
+          const deltaHeight = Math.abs(event.y - (d.y ?? 0)) * 2;
+
+          if (d.type === "text") {
+            const limits = NODE_LIMITS.text;
+            d.width = Math.max(limits.minWidth, Math.min(limits.maxWidth, deltaWidth));
+            d.height = Math.max(limits.minHeight, Math.min(limits.maxHeight, deltaHeight));
+          } else if (d.type === "media") {
+            const kind = d.itemData?.mediaType === "Video" ? "video" : "image";
+            const limits = NODE_LIMITS[kind];
+            const defaults = NODE_SIZE[kind];
+            const scaleFromPointer = Math.max(
+              deltaWidth / defaults.width,
+              deltaHeight / defaults.height
+            );
+            const minScale = Math.max(
+              limits.minWidth / defaults.width,
+              limits.minHeight / defaults.height
+            );
+            const maxScale = Math.min(
+              limits.maxWidth / defaults.width,
+              limits.maxHeight / defaults.height
+            );
+            const nextScale = Math.max(minScale, Math.min(maxScale, scaleFromPointer));
+            d.width = defaults.width * nextScale;
+            d.height = defaults.height * nextScale;
+          }
+
+          const nodeElement = this.parentNode as SVGGElement;
+          updateNodeGeometry(nodeElement, d);
+          simulationRef.current?.alpha(0.18).restart();
+          tickedRef.current?.();
+        })
+        .on("end", (event, d) => {
+          event.sourceEvent.stopPropagation();
+          d3.select((event.sourceEvent.target as Element).closest(".node"))
+            .classed("is-resizing", false);
+          d.originalX = d.x;
+          d.originalY = d.y;
+          d.fx = null;
+          d.fy = null;
+          simulationRef.current?.alphaTarget(0);
         });
+
+      const resizeWithKeyboard = function (
+        this: SVGGElement,
+        event: KeyboardEvent,
+        d: GraphNode
+      ) {
+        if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const step = event.shiftKey ? 20 : 8;
+        const grow = event.key === "ArrowRight" || event.key === "ArrowDown";
+        const delta = grow ? step : -step;
+
+        if (d.type === "text") {
+          const limits = NODE_LIMITS.text;
+          if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+            d.width = Math.max(limits.minWidth, Math.min(limits.maxWidth, getWidth(d) + delta));
+          } else {
+            d.height = Math.max(limits.minHeight, Math.min(limits.maxHeight, getHeight(d) + delta));
+          }
+        } else if (d.type === "media") {
+          const kind = d.itemData?.mediaType === "Video" ? "video" : "image";
+          const limits = NODE_LIMITS[kind];
+          const defaults = NODE_SIZE[kind];
+          const nextWidth = Math.max(limits.minWidth, Math.min(limits.maxWidth, getWidth(d) + delta));
+          const scale = nextWidth / defaults.width;
+          d.width = nextWidth;
+          d.height = Math.max(limits.minHeight, Math.min(limits.maxHeight, defaults.height * scale));
+        }
+
+        updateNodeGeometry(this.parentNode as SVGGElement, d);
+        simulationRef.current?.alpha(0.18).restart();
+        tickedRef.current?.();
+      };
 
       // RENDER LINKS
       const linkSelection = mainGroup
         .selectAll<SVGPathElement, GraphLink>(".link")
-        .data(links, (d: any) => `${d.source.id || d.source}-${d.target.id || d.target}`);
+        .data(links, (d) => {
+          const sourceId = typeof d.source === "string" ? d.source : d.source.id;
+          const targetId = typeof d.target === "string" ? d.target : d.target.id;
+          return `${sourceId}-${targetId}`;
+        });
 
       linkSelection.exit()
         .transition()
@@ -603,19 +964,17 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
         .enter()
         .append("g")
         .attr("class", (d) => `node node-${d.type}`)
-        .call(drag as any)
+        .call(drag)
         .on("click", (event, d) => {
           if (event.defaultPrevented) return;
 
           const nodeId = d.id;
           const isExpanded = expandedNodesRef.current.has(nodeId);
-          console.log("CLICKED NODE:", nodeId, "isExpanded:", isExpanded, "expandedNodes:", Array.from(expandedNodesRef.current));
 
           setExpandedNodes((prevExpanded) => {
             const nextExpanded = new Set(prevExpanded);
 
             if (isExpanded) {
-              console.log("COLLAPSING", nodeId);
               nextExpanded.delete(nodeId);
               const removeDescendants = (id: string) => {
                 if (id === "root") {
@@ -642,7 +1001,6 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
               };
               removeDescendants(nodeId);
             } else {
-              console.log("EXPANDING", nodeId);
               nextExpanded.add(nodeId);
               if (nodeId === "root") {
                 const yearKeys = Object.keys(timelineData.eras).map(Number);
@@ -653,7 +1011,6 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
                 });
               }
             }
-            console.log("NEXT EXPANDED NODES:", Array.from(nextExpanded));
             return nextExpanded;
           });
 
@@ -677,7 +1034,7 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
       nodeEnter
         .filter((d) => d.type === "center")
         .each(function () {
-          const group = d3.select(this);
+          const group = d3.select(this).append("g").attr("class", "node-content");
           group.append("circle").attr("r", 55);
           group.append("text").attr("dy", -6).text("RUBENIUS");
           group
@@ -685,7 +1042,7 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
             .attr("dy", 12)
             .text("INTERIORS")
             .style("font-size", "10px")
-            .style("fill", "var(--text-muted)");
+            .style("fill", "#ffffff");
 
           // Pulse halo
           group
@@ -701,101 +1058,244 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
             .attr("values", "60;80;60")
             .attr("dur", "4s")
             .attr("repeatCount", "indefinite");
-
-
         });
 
       // Year node template
       nodeEnter
         .filter((d) => d.type === "year")
         .each(function (d) {
-          const group = d3.select(this);
+          const group = d3.select(this).append("g").attr("class", "node-content");
           group.append("circle").attr("r", 20);
           group.append("text").attr("dy", 4).text(d.label);
-
           group
-            .append("circle")
-            .attr("class", "expand-indicator")
-            .attr("cx", 0)
-            .attr("cy", 20)
-            .attr("r", 4)
-            .style("fill", collapsedYears.has(d.year!) ? "var(--primary)" : "#2a9d8f")
-            .style("stroke", "var(--bg-base)")
-            .style("stroke-width", "1px");
-
-
+            .append("text")
+            .attr("class", "expand-glyph")
+            .attr("x", 0)
+            .attr("y", 32)
+            .text(collapsedYears.has(d.year!) ? "+" : "−");
         });
 
-      // Media node template (Image/Video square thumbnail preview)
+      // Responsive image/video card with inline playback controls.
       nodeEnter
         .filter((d) => d.type === "media")
         .each(function (d) {
-          const group = d3.select(this);
+          const node = d3.select<SVGGElement, GraphNode>(this);
+          const group = node.append("g").attr("class", "node-content");
+          const item = d.itemData!;
           const meta = categoryMeta[d.category!] || { color: "#d4af37" };
-          
-          // Outer square container
-          group
-            .append("rect")
-            .attr("x", -25)
-            .attr("y", -25)
-            .attr("width", 50)
-            .attr("height", 50)
-            .attr("rx", 6)
-            .style("fill", "rgba(18, 18, 24, 0.95)")
-            .style("stroke", meta.color)
-            .style("stroke-width", "2px");
+          const foreign = group
+            .append("foreignObject")
+            .attr("class", "node-foreign media-foreign");
+          const shell = foreign
+            .append("xhtml:div")
+            .attr("class", `media-node-shell media-node-${item.mediaType.toLowerCase()}`)
+            .style("--node-accent", meta.color);
 
-          // Image element
-          if (d.itemData?.image) {
-            group
-              .append("image")
-              .attr("href", d.itemData.image)
-              .attr("x", -22)
-              .attr("y", -22)
-              .attr("width", 44)
-              .attr("height", 44)
-              .attr("preserveAspectRatio", "xMidYMid slice")
-              .style("clip-path", "inset(0% round 4px)");
+          const stage = shell.append("xhtml:div").attr("class", "media-node-stage");
+
+          if (item.mediaType === "Video") {
+            const hasSource = Boolean(item.videoSrc);
+            const videoSelection = stage
+              .append("xhtml:video")
+              .attr("class", "node-video")
+              .attr("poster", item.image)
+              .attr("preload", "metadata")
+              .attr("playsinline", "")
+              .attr("muted", "")
+              .attr("autoplay", "")
+              .attr("loop", "")
+              .attr("aria-label", `${item.title} video`);
+
+            if (item.videoSrc) videoSelection.attr("src", item.videoSrc);
+            if (item.captionsSrc) {
+              videoSelection
+                .append("xhtml:track")
+                .attr("kind", "captions")
+                .attr("src", item.captionsSrc)
+                .attr("srclang", "en")
+                .attr("label", "English");
+            }
+
+            const video = videoSelection.node() as HTMLVideoElement;
+            video.muted = true;
+
+            if (!hasSource) {
+              stage
+                .append("xhtml:div")
+                .attr("class", "video-source-note")
+                .text("Add videoSrc to enable playback");
+            }
+
+            const controls = shell
+              .append("xhtml:div")
+              .attr("class", "node-video-controls")
+              .on("pointerdown", (event) => event.stopPropagation())
+              .on("click", (event) => event.stopPropagation());
+
+            const playButton = controls
+              .append("xhtml:button")
+              .attr("type", "button")
+              .attr("class", "video-control-btn video-play-btn")
+              .attr("aria-label", "Play video")
+              .property("disabled", !hasSource)
+              .text("▶");
+
+            const progress = controls
+              .append("xhtml:input")
+              .attr("class", "video-progress")
+              .attr("type", "range")
+              .attr("min", "0")
+              .attr("max", "100")
+              .attr("step", "0.1")
+              .attr("value", "0")
+              .attr("aria-label", "Video progress")
+              .property("disabled", !hasSource);
+
+            const time = controls
+              .append("xhtml:span")
+              .attr("class", "video-time")
+              .text("0:00 / 0:00");
+
+            const speed = controls
+              .append("xhtml:select")
+              .attr("class", "video-speed")
+              .attr("aria-label", "Playback speed")
+              .property("disabled", !hasSource);
+            [0.5, 1, 1.25, 1.5, 2].forEach((rate) => {
+              speed
+                .append("xhtml:option")
+                .attr("value", String(rate))
+                .property("selected", rate === 1)
+                .text(`${rate}×`);
+            });
+
+            const muteButton = controls
+              .append("xhtml:button")
+              .attr("type", "button")
+              .attr("class", "video-control-btn video-mute-btn")
+              .attr("aria-label", "Unmute video")
+              .property("disabled", !hasSource)
+              .text("🔇");
+
+            const volume = controls
+              .append("xhtml:input")
+              .attr("class", "video-volume")
+              .attr("type", "range")
+              .attr("min", "0")
+              .attr("max", "1")
+              .attr("step", "0.05")
+              .attr("value", "0.8")
+              .attr("aria-label", "Video volume")
+              .property("disabled", !hasSource);
+
+            const fullscreenButton = controls
+              .append("xhtml:button")
+              .attr("type", "button")
+              .attr("class", "video-control-btn video-fullscreen-btn")
+              .attr("aria-label", "Enter fullscreen")
+              .property("disabled", !hasSource)
+              .text("⛶");
+
+            const updatePlayState = () => {
+              playButton.text(video.paused ? "▶" : "❚❚");
+              playButton.attr("aria-label", video.paused ? "Play video" : "Pause video");
+            };
+            const updateTimeline = () => {
+              const duration = Number.isFinite(video.duration) ? video.duration : 0;
+              const percentage = duration ? (video.currentTime / duration) * 100 : 0;
+              progress.property("value", percentage);
+              const formatTime = (seconds: number) => {
+                const safeSeconds = Number.isFinite(seconds) ? Math.max(0, seconds) : 0;
+                const minutes = Math.floor(safeSeconds / 60);
+                const remainder = Math.floor(safeSeconds % 60).toString().padStart(2, "0");
+                return `${minutes}:${remainder}`;
+              };
+              time.text(`${formatTime(video.currentTime)} / ${formatTime(duration)}`);
+            };
+
+            playButton.on("click", () => {
+              if (video.paused) void video.play().catch(() => undefined);
+              else video.pause();
+            });
+            stage
+              .on("pointerdown", (event) => event.stopPropagation())
+              .on("click", (event) => {
+                event.stopPropagation();
+                if (!hasSource) return;
+                if (video.paused) void video.play().catch(() => undefined);
+                else video.pause();
+              });
+            progress.on("input", (event) => {
+              if (!video.duration) return;
+              const input = event.currentTarget as HTMLInputElement;
+              video.currentTime = (Number(input.value) / 100) * video.duration;
+            });
+            speed.on("change", (event) => {
+              video.playbackRate = Number((event.currentTarget as HTMLSelectElement).value);
+            });
+            muteButton.on("click", () => {
+              video.muted = !video.muted;
+              muteButton.text(video.muted ? "🔇" : "🔊");
+              muteButton.attr("aria-label", video.muted ? "Unmute video" : "Mute video");
+            });
+            volume.on("input", (event) => {
+              const nextVolume = Number((event.currentTarget as HTMLInputElement).value);
+              video.volume = nextVolume;
+              video.muted = nextVolume === 0;
+              muteButton.text(video.muted ? "🔇" : "🔊");
+            });
+            fullscreenButton.on("click", () => {
+              const shellElement = shell.node() as HTMLElement;
+              void shellElement.requestFullscreen?.();
+            });
+
+            video.addEventListener("play", updatePlayState);
+            video.addEventListener("pause", updatePlayState);
+            video.addEventListener("timeupdate", updateTimeline);
+            video.addEventListener("loadedmetadata", updateTimeline);
+            if (hasSource) void video.play().catch(() => undefined);
+          } else {
+            stage
+              .append("xhtml:img")
+              .attr("class", "node-image")
+              .attr("src", item.image)
+              .attr("alt", item.title)
+              .attr("draggable", "false");
           }
 
-          // Small play icon overlay if video
-          if (d.itemData?.mediaType === "Video") {
-            group
-              .append("polygon")
-              .attr("points", "-4,-6 6,0 -4,6")
-              .attr("transform", "translate(0, 0)")
-              .style("fill", "#ffffff")
-              .style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.5))");
-          }
+          shell
+            .append("xhtml:div")
+            .attr("class", "media-node-caption")
+            .append("xhtml:span")
+            .text(item.title);
 
-          // Label underneath
-          group
-            .append("text")
-            .attr("dx", 0)
-            .attr("dy", 38)
-            .attr("text-anchor", "middle")
-            .style("font-size", "9px")
-            .style("fill", "var(--text-muted)")
-            .text(d.label.length > 12 ? d.label.substring(0, 10) + ".." : d.label);
-
-
+          const handle = node
+            .append("g")
+            .attr("class", "resize-handle")
+            .attr("role", "button")
+            .attr("tabindex", 0)
+            .attr("aria-label", `Resize ${item.mediaType.toLowerCase()} node`)
+            .call(resize)
+            .on("keydown", resizeWithKeyboard)
+            .on("click", (event) => event.stopPropagation());
+          handle.append("rect").attr("x", -10).attr("y", -10).attr("width", 20).attr("height", 20).attr("rx", 5);
+          handle.append("path").attr("d", "M-4 5L5-4M1 5L5 1");
+          node.append("text").attr("class", "node-size-label");
+          updateNodeGeometry(this, d);
         });
 
       // Text node template (ForeignObject rectangle containing wrapped HTML text)
       nodeEnter
         .filter((d) => d.type === "text")
         .each(function (d) {
-          const group = d3.select(this);
+          const node = d3.select<SVGGElement, GraphNode>(this);
+          const group = node.append("g").attr("class", "node-content");
           const item = d.itemData!;
-          
           const foreign = group
             .append("foreignObject")
-            .attr("x", -110)
-            .attr("y", -50)
-            .attr("width", 220)
-            .attr("height", 100);
+            .attr("class", "node-foreign text-foreign");
 
-          foreign
+          const card = foreign
             .append("xhtml:div")
             .attr("class", "canvas-text-card")
             .html(`
@@ -804,21 +1304,37 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
               <div class="card-desc">${item.description}</div>
               <div class="card-meta">${item.stats}</div>
             `);
+
+          card
+            .on("pointerdown", (event) => event.stopPropagation())
+            .on("click", (event) => event.stopPropagation())
+            .on("wheel", (event) => event.stopPropagation());
+
+          const handle = node
+            .append("g")
+            .attr("class", "resize-handle")
+            .attr("role", "button")
+            .attr("tabindex", 0)
+            .attr("aria-label", "Resize text node")
+            .call(resize)
+            .on("keydown", resizeWithKeyboard)
+            .on("click", (event) => event.stopPropagation());
+          handle.append("rect").attr("x", -10).attr("y", -10).attr("width", 20).attr("height", 20).attr("rx", 5);
+          handle.append("path").attr("d", "M-4 5L5-4M1 5L5 1");
+          node.append("text").attr("class", "node-size-label");
+          updateNodeGeometry(this, d);
         });
 
       // Awards node template (ForeignObject rectangle for Awards)
       nodeEnter
         .filter((d) => d.type === "awards")
         .each(function (d) {
-          const group = d3.select(this);
+          const group = d3.select(this).append("g").attr("class", "node-content");
           const item = d.itemData!;
           
           const foreign = group
             .append("foreignObject")
-            .attr("x", -90)
-            .attr("y", -25)
-            .attr("width", 180)
-            .attr("height", 50);
+            .attr("class", "node-foreign");
 
           foreign
             .append("xhtml:div")
@@ -827,35 +1343,34 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
               <span class="award-trophy">🏆</span>
               <span class="award-text">${item.awards.join(" • ")}</span>
             `);
+          updateNodeGeometry(this, d);
         });
 
-      const allNodes = nodeEnter.merge(nodeSelection as any);
+      const allNodes = nodeEnter.merge(nodeSelection);
 
       // Class settings & filtering dim effects
-      allNodes.each(function (d: any) {
-        const el = d3.select(this);
+      allNodes.each(function (d) {
+        const el = d3.select<SVGGElement, GraphNode>(this);
         el.classed("selected", d.id === selectedNodeId);
 
         const isExpanded = expandedNodes.has(d.id);
         const hasHidden = !isExpanded && (d.type === "center" || d.type === "year" || d.type === "media");
         el.classed("has-hidden-children", hasHidden);
-
-
-
         el.classed("faded", false);
+        updateNodeGeometry(this, d);
       });
 
-      // Update expand indicators for years
+      // A clear plus/minus replaces the previous ambiguous status dot.
       allNodes
         .filter((d) => d.type === "year")
-        .select(".expand-indicator")
-        .style("fill", (d) => (collapsedYears.has(d.year!) ? "var(--primary)" : "#2a9d8f"));
+        .select(".expand-glyph")
+        .text((d) => (collapsedYears.has(d.year!) ? "+" : "−"));
 
       // Update force simulation data
       simulationRef.current.nodes(nodes);
       (simulationRef.current.force("link") as d3.ForceLink<GraphNode, GraphLink>)?.links(links);
       simulationRef.current.alpha(0.8).restart();
-    }, [collapsedYears, selectedNodeId, expandedNodes]);
+    }, [collapsedYears, selectedNodeId, expandedNodes, setCollapsedYears, setSelectedNodeId]);
 
     return (
       <div className="mindmap-container" id="mindmapView" ref={containerRef}>
