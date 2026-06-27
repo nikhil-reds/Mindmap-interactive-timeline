@@ -13,11 +13,15 @@ import * as d3 from "d3";
 import { GraphNode, GraphLink } from "./types";
 import { timelineData, categoryMeta } from "./data";
 
+export const MIN_ZOOM = 0.35;
+export const MAX_ZOOM = 2;
+
 interface MindmapCanvasProps {
   selectedNodeId: string | null;
   setSelectedNodeId: (id: string | null) => void;
   collapsedYears: Set<number>;
   setCollapsedYears: Dispatch<SetStateAction<Set<number>>>;
+  onZoomChange: (scale: number) => void;
 }
 
 export interface MindmapCanvasRef {
@@ -259,6 +263,7 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
       setSelectedNodeId,
       collapsedYears,
       setCollapsedYears,
+      onZoomChange,
     },
     ref
   ) => {
@@ -299,6 +304,8 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
     const zoomBehaviorRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
     const simulationRef = useRef<d3.Simulation<GraphNode, GraphLink> | null>(null);
     const tickedRef = useRef<(() => void) | null>(null);
+    const onZoomChangeRef = useRef(onZoomChange);
+    onZoomChangeRef.current = onZoomChange;
 
 
 
@@ -338,7 +345,7 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
       const padding = 80;
       const scaleX = (w - padding * 2) / graphWidth;
       const scaleY = (h - padding * 2) / graphHeight;
-      const scale = Math.min(Math.min(scaleX, scaleY), 1.0);
+      const scale = Math.max(MIN_ZOOM, Math.min(Math.min(scaleX, scaleY), 1.0));
 
       const transform = d3.zoomIdentity
         .translate(w / 2 - scale * graphCenterX, h / 2 - scale * graphCenterY)
@@ -360,18 +367,22 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
     useImperativeHandle(ref, () => ({
       zoomIn: () => {
         if (svgRef.current && zoomBehaviorRef.current) {
+          const currentScale = d3.zoomTransform(svgRef.current).k;
+          const nextScale = Math.min(MAX_ZOOM, currentScale * 1.25);
           d3.select(svgRef.current)
             .transition()
             .duration(350)
-            .call(zoomBehaviorRef.current.scaleBy, 1.3);
+            .call(zoomBehaviorRef.current.scaleTo, nextScale);
         }
       },
       zoomOut: () => {
         if (svgRef.current && zoomBehaviorRef.current) {
+          const currentScale = d3.zoomTransform(svgRef.current).k;
+          const nextScale = Math.max(MIN_ZOOM, currentScale / 1.25);
           d3.select(svgRef.current)
             .transition()
             .duration(350)
-            .call(zoomBehaviorRef.current.scaleBy, 0.7);
+            .call(zoomBehaviorRef.current.scaleTo, nextScale);
         }
       },
       resetZoom: () => {
@@ -391,10 +402,11 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
       // Setup Zooming & Panning
       const zoomBehavior = d3
         .zoom<SVGSVGElement, unknown>()
-        .scaleExtent([0.15, 3])
+        .scaleExtent([MIN_ZOOM, MAX_ZOOM])
         .on("zoom", (event) => {
           mainGroup.attr("transform", event.transform);
           const k = event.transform.k;
+          onZoomChangeRef.current(k);
           d3.selectAll(".node-center .node-content").attr("transform", `scale(${1 / k})`);
           d3.selectAll(".node-year .node-content").attr("transform", `scale(${1 / k})`);
         });
