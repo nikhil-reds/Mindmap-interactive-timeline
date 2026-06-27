@@ -454,8 +454,7 @@
     vector-effect: non-scaling-stroke;
 }
 
-.node.has-hidden-children circle,
-.node.has-hidden-children rect {
+.node.has-hidden-children > .node-content circle {
     stroke: var(--primary) !important;
     stroke-width: 2.5px !important;
     filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.85)) !important;
@@ -469,17 +468,6 @@
     50% {
         filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.95));
     }
-}
-
-.toggle-badge circle {
-    transition: stroke 0.3s, fill 0.3s;
-}
-
-.toggle-badge text {
-    font-weight: 700;
-    pointer-events: none;
-    transition: fill 0.3s;
-    user-select: none;
 }
 
 .link.active {
@@ -584,47 +572,263 @@
     pointer-events: none;
 }
 
+.node-year .expand-glyph {
+    fill: var(--primary-light) !important;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0.82;
+}
+
 /* Media Node */
-.node-media rect {
-    transition: all 0.3s ease;
+.node-media foreignObject {
+    overflow: visible;
+}
+
+.media-node-shell {
+    --node-accent: var(--primary);
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    color: #fff;
+    background: rgba(10, 10, 14, 0.96);
+    border: 1px solid color-mix(in srgb, var(--node-accent) 72%, transparent);
+    border-radius: 12px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.56), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+    container-type: size;
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.node-media:hover .media-node-shell,
+.node-media.selected .media-node-shell,
+.node-media.has-hidden-children .media-node-shell {
+    border-color: var(--primary-light);
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.62), 0 0 18px rgba(212, 175, 55, 0.34);
+}
+
+.media-node-stage {
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+    background: #08080b;
+}
+
+.node-image,
+.node-video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #08080b;
+}
+
+.node-video {
     cursor: pointer;
 }
 
-.node-media:hover rect {
-    transform: scale(1.08) translate(0, 0);
-    filter: drop-shadow(0px 0px 8px var(--glow-color, rgba(212,175,55,0.6)));
+.video-source-note {
+    position: absolute;
+    left: 50%;
+    bottom: 8px;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: calc(100% - 16px);
+    padding: 4px 8px;
+    overflow: hidden;
+    color: rgba(255, 255, 255, 0.82);
+    background: rgba(0, 0, 0, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    font-size: 8px;
+    line-height: 1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    pointer-events: none;
 }
 
-.node-media.selected rect {
-    stroke: #fff !important;
-    stroke-width: 2.5px !important;
-    filter: drop-shadow(0px 0px 10px #fff) !important;
+.media-node-caption {
+    min-width: 0;
+    padding: 6px 9px 7px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: clamp(8px, 5cqw, 12px);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.media-node-caption span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.node-video-controls {
+    min-width: 0;
+    padding: 5px 7px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(10, 10, 14, 0.98);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.video-control-btn,
+.video-speed {
+    flex: 0 0 auto;
+    height: 24px;
+    min-width: 24px;
+    padding: 0 5px;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    font: 600 9px/1 var(--font-sans);
+    cursor: pointer;
+}
+
+.video-control-btn:hover,
+.video-speed:hover {
+    color: var(--primary-light);
+    border-color: rgba(212, 175, 55, 0.48);
+}
+
+.video-control-btn:disabled,
+.video-speed:disabled,
+.node-video-controls input:disabled {
+    cursor: not-allowed;
+    opacity: 0.38;
+}
+
+.video-progress,
+.video-volume {
+    height: 3px;
+    min-width: 30px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+.video-progress {
+    flex: 1 1 90px;
+}
+
+.video-volume {
+    flex: 0 1 54px;
+    max-width: 54px;
+}
+
+.video-time {
+    flex: 0 0 auto;
+    color: rgba(255, 255, 255, 0.62);
+    font: 500 8px/1 var(--font-mono);
+    white-space: nowrap;
+}
+
+.video-speed {
+    appearance: none;
+    text-align: center;
+}
+
+.media-node-shell.is-compact .video-time,
+.media-node-shell.is-compact .video-volume,
+.media-node-shell.is-compact .video-speed,
+.media-node-shell.is-compact .video-fullscreen-btn {
+    display: none;
+}
+
+.resize-handle {
+    opacity: 0;
+    cursor: nwse-resize;
+    pointer-events: none;
+    transition: opacity 150ms ease;
+}
+
+.node-media:hover .resize-handle,
+.node-text:hover .resize-handle,
+.node-media.selected .resize-handle,
+.node-text.selected .resize-handle,
+.node.is-resizing .resize-handle {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Long-form text must expose its resize affordance without requiring hover. */
+.node-text .resize-handle {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.resize-handle rect {
+    fill: #111117;
+    stroke: var(--primary-light);
+    stroke-width: 1.5px;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.65));
+}
+
+.resize-handle:focus {
+    outline: none;
+}
+
+.resize-handle:focus rect {
+    stroke: #fff;
+    stroke-width: 2px;
+    filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.8));
+}
+
+.resize-handle path {
+    fill: none;
+    stroke: var(--primary-light);
+    stroke-width: 1.4px;
+    stroke-linecap: round;
+    pointer-events: none;
+}
+
+.node-size-label {
+    opacity: 0;
+    fill: rgba(255, 255, 255, 0.7) !important;
+    font: 600 9px/1 var(--font-mono);
+    text-anchor: end;
+    pointer-events: none;
+}
+
+.node.is-resizing .node-size-label {
+    opacity: 1;
 }
 
 /* Rich Text & Award Cards inside SVG foreignObject */
-.node-text foreignObject,
 .node-awards foreignObject {
     overflow: visible;
-    pointer-events: none; /* Ignore mouse interactions on text cards to allow panning underneath */
+    pointer-events: none;
+}
+
+.node-text .text-foreign {
+    container-type: size;
+    overflow: visible;
+    pointer-events: auto;
 }
 
 .canvas-text-card {
     background: rgba(12, 12, 16, 0.82);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 10px;
-    padding: 10px 12px;
-    color: var(--text-main);
+    padding: clamp(10px, 4cqw, 18px);
+    color: #ffffff;
     font-family: var(--font-sans);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
     width: 100%;
     height: 100%;
     box-sizing: border-box;
-    overflow: hidden;
+    overflow: auto;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: clamp(4px, 1.8cqw, 9px);
+    user-select: text;
 }
 
 .canvas-text-card .card-year-tag {
@@ -633,38 +837,47 @@
     text-transform: uppercase;
     font-weight: 700;
     letter-spacing: 1px;
-    margin-bottom: 2px;
+    flex: 0 0 auto;
 }
 
 .canvas-text-card .card-title {
     font-family: var(--font-serif);
-    font-size: 11px;
+    font-size: clamp(11px, 5cqw, 18px);
     font-weight: 600;
-    color: #fff;
-    margin-bottom: 4px;
+    color: #ffffff;
+    flex: 0 0 auto;
     line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow: visible;
 }
 
 .canvas-text-card .card-desc {
-    font-size: 9px;
-    color: var(--text-muted);
+    flex: 0 0 auto;
+    font-size: clamp(9px, 3.6cqw, 14px);
+    color: #ffffff;
     line-height: 1.35;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    margin-bottom: 4px;
+    overflow: visible;
 }
 
 .canvas-text-card .card-meta {
-    font-size: 7.5px;
-    color: rgba(255, 255, 255, 0.35);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: clamp(7.5px, 3cqw, 11px);
+    color: #ffffff;
+    flex: 0 0 auto;
+    white-space: normal;
+    overflow: visible;
+}
+
+.canvas-text-card::-webkit-scrollbar {
+    width: 5px;
+}
+
+.canvas-text-card::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.canvas-text-card::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.42);
+    border-radius: 999px;
 }
 
 .canvas-award-card {
@@ -675,7 +888,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: var(--primary-light);
+    color: #ffffff;
     font-family: var(--font-sans);
     font-size: 9px;
     font-weight: 600;
