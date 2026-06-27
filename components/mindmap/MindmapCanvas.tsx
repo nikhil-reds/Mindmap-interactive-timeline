@@ -1246,7 +1246,7 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
 
           if (item.mediaType === "Video") {
             const hasSource = Boolean(item.videoSrc);
-            const isYouTube = hasSource && (item.videoSrc.includes("youtube.com") || item.videoSrc.includes("youtu.be"));
+            const isYouTube = Boolean(item.videoSrc && (item.videoSrc.includes("youtube.com") || item.videoSrc.includes("youtu.be")));
 
             if (isYouTube) {
               let videoId = "";
