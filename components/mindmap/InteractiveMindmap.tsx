@@ -5,6 +5,7 @@ import { ZoomControls } from "./ZoomControls";
 import {
   MAX_ZOOM,
   MIN_ZOOM,
+  DEFAULT_ZOOM,
   MindmapCanvas,
   MindmapCanvasRef,
 } from "./MindmapCanvas";
@@ -15,7 +16,7 @@ export const InteractiveMindmap: React.FC = () => {
   const [collapsedYears, setCollapsedYears] = useState<Set<number>>(
     new Set([2005, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
   );
-  const [zoomScale, setZoomScale] = useState(0.85);
+  const [zoomScale, setZoomScale] = useState(DEFAULT_ZOOM);
 
   const canvasRef = useRef<MindmapCanvasRef | null>(null);
 
@@ -39,7 +40,7 @@ export const InteractiveMindmap: React.FC = () => {
           <ZoomControls
             onZoomIn={() => canvasRef.current?.zoomIn()}
             onZoomOut={() => canvasRef.current?.zoomOut()}
-            onReset={() => canvasRef.current?.resetZoom()}
+            onReset={() => canvasRef.current?.resetView()}
             zoomScale={zoomScale}
             minZoom={MIN_ZOOM}
             maxZoom={MAX_ZOOM}

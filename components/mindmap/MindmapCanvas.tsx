@@ -15,6 +15,7 @@ import { timelineData, categoryMeta } from "./data";
 
 export const MIN_ZOOM = 0.35;
 export const MAX_ZOOM = 2;
+export const DEFAULT_ZOOM = 0.85;
 
 interface MindmapCanvasProps {
   selectedNodeId: string | null;
@@ -27,7 +28,7 @@ interface MindmapCanvasProps {
 export interface MindmapCanvasRef {
   zoomIn: () => void;
   zoomOut: () => void;
-  resetZoom: () => void;
+  resetView: () => void;
 }
 
 interface Point {
@@ -305,11 +306,85 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
     const simulationRef = useRef<d3.Simulation<GraphNode, GraphLink> | null>(null);
     const tickedRef = useRef<(() => void) | null>(null);
     const onZoomChangeRef = useRef(onZoomChange);
+    const branchFocusNodeRef = useRef<string | null>(null);
+    const branchVisibilityTimerRef = useRef<number | null>(null);
     onZoomChangeRef.current = onZoomChange;
 
 
 
     const hasInitialCenteredRef = useRef(false);
+
+    const ensureBranchVisibleRef = useRef<(focusNodeId: string) => void>(() => undefined);
+    ensureBranchVisibleRef.current = (focusNodeId: string) => {
+      if (
+        !svgRef.current ||
+        !containerRef.current ||
+        !zoomBehaviorRef.current ||
+        !simulationRef.current
+      ) return;
+
+      const allNodes = simulationRef.current.nodes();
+      const liveLinks = (
+        simulationRef.current.force("link") as d3.ForceLink<GraphNode, GraphLink>
+      ).links();
+      const branchNodeIds = new Set<string>([focusNodeId]);
+
+      liveLinks.forEach((link) => {
+        const sourceId = typeof link.source === "string" ? link.source : link.source.id;
+        const targetId = typeof link.target === "string" ? link.target : link.target.id;
+        if (sourceId === focusNodeId) branchNodeIds.add(targetId);
+      });
+
+      const branchNodes = allNodes.filter(
+        (node) => branchNodeIds.has(node.id) && node.x !== undefined && node.y !== undefined
+      );
+      if (branchNodes.length < 2) return;
+
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let minY = Infinity;
+      let maxY = -Infinity;
+      branchNodes.forEach((node) => {
+        const rect = getNodeRect(node);
+        minX = Math.min(minX, rect.left);
+        maxX = Math.max(maxX, rect.right);
+        minY = Math.min(minY, rect.top);
+        maxY = Math.max(maxY, rect.bottom);
+      });
+
+      const viewportWidth = containerRef.current.clientWidth || 800;
+      const viewportHeight = containerRef.current.clientHeight || 600;
+      const padding = 72;
+      const currentTransform = d3.zoomTransform(svgRef.current);
+      const currentlyVisible =
+        minX * currentTransform.k + currentTransform.x >= padding &&
+        maxX * currentTransform.k + currentTransform.x <= viewportWidth - padding &&
+        minY * currentTransform.k + currentTransform.y >= padding &&
+        maxY * currentTransform.k + currentTransform.y <= viewportHeight - padding;
+      if (currentlyVisible) return;
+
+      const branchWidth = Math.max(1, maxX - minX);
+      const branchHeight = Math.max(1, maxY - minY);
+      const fitScale = Math.min(
+        (viewportWidth - padding * 2) / branchWidth,
+        (viewportHeight - padding * 2) / branchHeight
+      );
+      const nextScale = Math.max(MIN_ZOOM, Math.min(currentTransform.k, fitScale));
+      const branchCenterX = minX + branchWidth / 2;
+      const branchCenterY = minY + branchHeight / 2;
+      const nextTransform = d3.zoomIdentity
+        .translate(
+          viewportWidth / 2 - nextScale * branchCenterX,
+          viewportHeight / 2 - nextScale * branchCenterY
+        )
+        .scale(nextScale);
+
+      d3.select(svgRef.current)
+        .transition()
+        .duration(550)
+        .ease(d3.easeCubicOut)
+        .call(zoomBehaviorRef.current.transform, nextTransform);
+    };
 
     const centerAndScaleGraph = (transitionDuration = 500) => {
       if (!svgRef.current || !zoomBehaviorRef.current || !containerRef.current || !simulationRef.current) return;
@@ -385,8 +460,63 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
             .call(zoomBehaviorRef.current.scaleTo, nextScale);
         }
       },
-      resetZoom: () => {
-        centerAndScaleGraph(800);
+      resetView: () => {
+        branchFocusNodeRef.current = null;
+        if (branchVisibilityTimerRef.current !== null) {
+          window.clearTimeout(branchVisibilityTimerRef.current);
+          branchVisibilityTimerRef.current = null;
+        }
+        const allYears = Object.keys(timelineData.eras).map(Number);
+        const viewportWidth = containerRef.current?.clientWidth || 800;
+        const viewportHeight = containerRef.current?.clientHeight || 600;
+
+        // Reset every manual drag/resize pin before collapsing the hierarchy.
+        simulationRef.current?.nodes().forEach((node) => {
+          node.fx = null;
+          node.fy = null;
+          if (node.id === "root") {
+            node.x = viewportWidth / 2;
+            node.y = viewportHeight / 2;
+            node.originalX = viewportWidth / 2;
+            node.originalY = viewportHeight / 2;
+            node.vx = 0;
+            node.vy = 0;
+          }
+        });
+
+        setExpandedNodes(new Set());
+        setCollapsedYears(new Set(allYears));
+        setSelectedNodeId(null);
+
+        // Wait for the collapsed root-only graph to be committed before centering it.
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (
+              !svgRef.current ||
+              !zoomBehaviorRef.current ||
+              !containerRef.current ||
+              !simulationRef.current
+            ) return;
+
+            const root = simulationRef.current.nodes().find((node) => node.id === "root");
+            const rootX = root?.x ?? containerRef.current.clientWidth / 2;
+            const rootY = root?.y ?? containerRef.current.clientHeight / 2;
+            const viewportWidth = containerRef.current.clientWidth || 800;
+            const viewportHeight = containerRef.current.clientHeight || 600;
+            const transform = d3.zoomIdentity
+              .translate(
+                viewportWidth / 2 - DEFAULT_ZOOM * rootX,
+                viewportHeight / 2 - DEFAULT_ZOOM * rootY
+              )
+              .scale(DEFAULT_ZOOM);
+
+            d3.select(svgRef.current)
+              .transition()
+              .duration(600)
+              .ease(d3.easeCubicOut)
+              .call(zoomBehaviorRef.current.transform, transform);
+          });
+        });
       },
     }));
 
@@ -417,7 +547,7 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
       // Initial zoom transform
       svgEl.call(
         zoomBehavior.transform,
-        d3.zoomIdentity.translate(width / 2 - 120, height / 2).scale(0.85)
+        d3.zoomIdentity.translate(width / 2 - 120, height / 2).scale(DEFAULT_ZOOM)
       );
 
       // Setup force simulation
@@ -535,6 +665,10 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
       return () => {
         simulation.stop();
         tickedRef.current = null;
+        if (branchVisibilityTimerRef.current !== null) {
+          window.clearTimeout(branchVisibilityTimerRef.current);
+          branchVisibilityTimerRef.current = null;
+        }
       };
     }, []);
 
@@ -845,9 +979,9 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
           d3.select(event.sourceEvent.target.closest('.node')).classed("is-dragging", false);
           d.originalX = d.x;
           d.originalY = d.y;
-          // Release after drag so collision forces can always resolve future overlaps.
-          d.fx = null;
-          d.fy = null;
+          // Manual placement is authoritative until the user resets the view.
+          d.fx = d.x;
+          d.fy = d.y;
         });
 
       const resize = d3
@@ -900,8 +1034,8 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
             .classed("is-resizing", false);
           d.originalX = d.x;
           d.originalY = d.y;
-          d.fx = null;
-          d.fy = null;
+          d.fx = d.x;
+          d.fy = d.y;
           simulationRef.current?.alphaTarget(0);
         });
 
@@ -982,6 +1116,8 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
 
           const nodeId = d.id;
           const isExpanded = expandedNodesRef.current.has(nodeId);
+          const canExpand = d.type === "center" || d.type === "year" || d.type === "media";
+          branchFocusNodeRef.current = !isExpanded && canExpand ? nodeId : null;
 
           setExpandedNodes((prevExpanded) => {
             const nextExpanded = new Set(prevExpanded);
@@ -1382,6 +1518,24 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
       simulationRef.current.nodes(nodes);
       (simulationRef.current.force("link") as d3.ForceLink<GraphNode, GraphLink>)?.links(links);
       simulationRef.current.alpha(0.8).restart();
+
+      if (branchVisibilityTimerRef.current !== null) {
+        window.clearTimeout(branchVisibilityTimerRef.current);
+        branchVisibilityTimerRef.current = null;
+      }
+      if (branchFocusNodeRef.current) {
+        const focusNodeId = branchFocusNodeRef.current;
+        branchVisibilityTimerRef.current = window.setTimeout(() => {
+          ensureBranchVisibleRef.current(focusNodeId);
+          // Re-check once the force layout has cooled so late movement cannot push
+          // the newly opened branch back outside the viewport.
+          branchVisibilityTimerRef.current = window.setTimeout(() => {
+            ensureBranchVisibleRef.current(focusNodeId);
+            branchFocusNodeRef.current = null;
+            branchVisibilityTimerRef.current = null;
+          }, 620);
+        }, 280);
+      }
     }, [collapsedYears, selectedNodeId, expandedNodes, setCollapsedYears, setSelectedNodeId]);
 
     return (

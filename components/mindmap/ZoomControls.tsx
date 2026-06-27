@@ -45,7 +45,7 @@ export const ZoomControls: React.FC<ZoomControlsProps> = ({
       >
         -
       </button>
-      <button className="zoom-btn" onClick={onReset} title="Fit graph" aria-label="Fit graph">
+      <button className="zoom-btn" onClick={onReset} title="Reset view" aria-label="Reset view">
         ⟲
       </button>
     </div>
