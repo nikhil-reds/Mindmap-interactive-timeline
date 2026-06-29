@@ -963,9 +963,15 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
           simulationRef.current?.stop();
           d.fx = d.x;
           d.fy = d.y;
-          d3.select(event.sourceEvent.target.closest('.node')).classed("is-dragging", true);
+          const nodeElement = event.sourceEvent?.target?.closest('.node');
+          if (nodeElement) {
+            d3.select(nodeElement).classed("is-dragging", true);
+          }
         })
-        .on("drag", (event, d) => {
+        .on("drag", function (this: SVGGElement, event, d) {
+          if (this && this.nextSibling !== null) {
+            d3.select(this).raise();
+          }
           const constrained = clampPointToMesh(d, { x: event.x, y: event.y }, width, height);
           d.x = constrained.x;
           d.y = constrained.y;
@@ -974,7 +980,10 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
           tickedRef.current?.();
         })
         .on("end", (event, d) => {
-          d3.select(event.sourceEvent.target.closest('.node')).classed("is-dragging", false);
+          const nodeElement = event.sourceEvent?.target?.closest('.node');
+          if (nodeElement) {
+            d3.select(nodeElement).classed("is-dragging", false);
+          }
           d.originalX = d.x;
           d.originalY = d.y;
           // Manual placement is authoritative until the user resets the view.
@@ -989,10 +998,12 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
           event.sourceEvent.stopPropagation();
           d.fx = d.x;
           d.fy = d.y;
-          d3.select((event.sourceEvent.target as Element).closest(".node"))
-            .classed("is-resizing", true);
+          const nodeElement = (event.sourceEvent.target as Element).closest(".node");
+          if (nodeElement) {
+            d3.select(nodeElement).classed("is-resizing", true);
+          }
         })
-        .on("drag", function (event, d) {
+        .on("drag", function (this: SVGGElement, event, d) {
           event.sourceEvent.stopPropagation();
           const deltaWidth = Math.abs(event.x - (d.x ?? 0)) * 2;
           const deltaHeight = Math.abs(event.y - (d.y ?? 0)) * 2;
@@ -1024,14 +1035,19 @@ export const MindmapCanvas = forwardRef<MindmapCanvasRef, MindmapCanvasProps>(
 
           constrainNodeToMesh(d, width, height);
           const nodeElement = this.parentNode as SVGGElement;
+          if (nodeElement && nodeElement.nextSibling !== null) {
+            d3.select(nodeElement).raise();
+          }
           updateNodeGeometry(nodeElement, d);
           simulationRef.current?.alpha(0.18).restart();
           tickedRef.current?.();
         })
         .on("end", (event, d) => {
           event.sourceEvent.stopPropagation();
-          d3.select((event.sourceEvent.target as Element).closest(".node"))
-            .classed("is-resizing", false);
+          const nodeElement = (event.sourceEvent.target as Element).closest(".node");
+          if (nodeElement) {
+            d3.select(nodeElement).classed("is-resizing", false);
+          }
           d.originalX = d.x;
           d.originalY = d.y;
           d.fx = d.x;
